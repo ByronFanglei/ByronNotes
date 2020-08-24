@@ -427,29 +427,34 @@ for (let i = 1; i < 321; i += 10) {
 * 使用dotAll进行验证是否开启dotall模式，使用flags查看开启什么模式
 
 ```javascript
-const re = /foo.qwe/u
+const re = /foo.qwe/s
 console.log(re.dotAll) // true
-console.log(re.flags) // u
+console.log(re.flags) // s
 ```
 * 断言
 
 ```javascript
 let test = 'hello world'
-// 先行断言
-console.log(test.match(/hello(?=\sworld)/))
+// 先行断言 先遇到一个条件判断是否满足
+console.log(test.match(/hello(?=\sworld)/)) 
+// ["hello", index: 0, input: "hello world", groups: undefined]
 // 后行断言
-console.log(test.match(/(?<=hello\s)world/))
+console.log(test.match(/(?<=hello\s)world/)) 
+// ["world", index: 6, input: "hello world", groups: undefined]
 // 后行断言不等于
-console.log(test.match(/(?<!hellq\s)world/))
+console.log(test.match(/(?<!hellq\s)world/)) 
+// ["world", index: 6, input: "hello world", groups: undefined]
 // 请把'$foo %foo foo'字符串中前面是$符号的foo替换为bar
 let one = '$foo %foo foo'
 let value = one.match(/(?<=\$)foo/)[0]
-console.log(one.match(/(?<=\$)foo/))
+console.log(one.match(/(?<=\$)foo/)) 
+// ["foo", index: 1, input: "$foo %foo foo", groups: undefined]
 console.log(one.replace(value, 'bar')) // $bar %foo foo
 // 请提取'$1 is worth about ￥123'字符中的美元数是多少
 let two = '$2 is worth about ￥123'
 let tval = two.match(/(?<=\$)./)[0]
-console.log(two.match(/(?<=\$)./))
+console.log(two.match(/(?<=\$)./)) 
+// ["2", index: 1, input: "$2 is worth about ￥123", groups: undefined]
 console.log(tval) // 2
 ```
 
@@ -1923,6 +1928,20 @@ console.log(g.next())
 * 迭代器协议：必须返回一个next的对象，而且next必须返回done和value
 
 ```javascript
+// 总体结构
+authors[Symbol.iterator] = function () {
+  return {
+    next () {
+      return {
+        // done为是否可以继续遍历，true为不能，false为可以
+        done: false,
+        // value为遍历内容
+        value: 1
+      }
+    }
+  }
+}
+// 小案例
 let authors = {
   allAuthors: {
     fiction: ['Agla', 'Skks', 'LP'],
@@ -2143,6 +2162,26 @@ console.log(sum(...data))
 
 ### 循环异步操作
 * for await of：循环异步操作
+```javascript
+function Gen (time) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(time)
+    }, time)
+  })
+}
+
+async function tset () {
+  let arr = [Gen(2000), Gen(100), Gen(3000)]
+  for await (let item of arr) {
+    console.log(Date.now(), item)
+  }
+}
+tset()
+// 1598266000374 2000
+// 1598266000374 100
+// 1598266001375 3000
+```
 
 ### Object
 * Object新增语法
@@ -2197,6 +2236,9 @@ Object.assign(目标对象，需要添加对象1，需要添加对象2...)
     configurable: true
   })
 ```
+
+* Object.getOwnPropertyDescriptors(obj)：查看对象的所有信息
+* Object.getOwnPropertyDescriptor(data, '字段1')：查看指定对象指定值的信息
 
 * Object.fromEntries：可以直接获取对应key的value，括号内部要使用数组，相当与把数组转换为对象，当然可以使用Object.entries将对象转换为数组
 
