@@ -13,7 +13,7 @@
 >Boolean()函数：数字除了0和NaN,其余都是true，字符串除了空串，其余都是true，null和undefined都转为false
 >object也为true
 >！！直接转为boolean，一个！当前数值的反也就是false，两层！则为true
->+某个值可以直接转换为number
+>+某个值可以直接转换为number	eg: +'3' = 3
 >任何数据加“”（空字符串）即可变为string
 >任何值和NaN比较都为false
 >NaN不和任何值相等包括它本身
@@ -29,7 +29,7 @@
 >创建对象：var obj = new Object;	var obj = {};
 >删除对象属性：delete obj.name;
 >检查对象属性：console.log("age" in obj)
->循环对象：for(var 变量 in 对象){ console.log(obj[n]) }		forin
+>循环对象：for(var 变量 in 对象){ console.log(obj[n]) }		for in
 
 * this
 >根据函数的调用方式不同，this会指向不同的对象
@@ -48,10 +48,10 @@
     console.log('这是普通函数'+this);
   }
   // 调用
-  fn();
-  fn.call();
-  fn.apply();
-  fn.bind()();
+  fn(); // 这是对象方法函数[object Window]
+  fn.call(); // 这是对象方法函数[object Window]
+  fn.apply(); // 这是对象方法函数[object Window]
+  fn.bind()(); // 这是对象方法函数[object Window]
 ```
 
 >对象方法
@@ -63,7 +63,7 @@
       console.log('这是对象方法函数'+this);
     }
   }
-  fun.say();
+  fun.say(); // 这是对象方法函数[object Object]
 ```
 
 >构造函数
@@ -95,7 +95,7 @@
 ```javascript
   //定时器函数
   setTimeout(function(){
-    console.log('这是定时器函数'+this);
+    console.log('这是定时器函数'+this); // 这是定时器函数[object Window]
   },2000);
 ```
 
@@ -104,7 +104,7 @@
 ```javascript
   //立即执行函数，立即执行函数上一个函数结束后必须加;，否则报错
   (function() {
-    console.log('这是立即执行函数'+this);
+    console.log('这是立即执行函数'+this); // 这是立即执行函数[object Window]
   })();
 ```
 
@@ -119,8 +119,8 @@ Mycalss.prototype.a = function(){
 };
 ```
 
->对象本身可以使用 __proto__来访问属性
->对象函数的__proto__与构造函数的prototype是一样的
+>对象本身可以使用`__proto__`来访问属性
+>对象函数的`__proto__`与构造函数的prototype是一样的
 >使用in查看对象是否含有某个属性，如果没有会在原型中查看：
 
 ```javaScript
@@ -151,15 +151,15 @@ console.log(one.hasOwnProperty("name"));
 ```
 
 ### 数组方法
-* length：获取数组长度
+* length：获取数组长度(属性)
 * push：在数组末尾添加一个或多个元素，返回数组长度
 * pop：删除数组最后一个元素，将删除元素返回
 * unshift：在数组头部添加一个或多个元素，返回数组长度
 * shift：删除数组第一个元素，将删除元素返回
-* slice(start,end)：从数组提取指定元素，返回新数组，不包含结束索引，省略end后返回之后所有数组，可以传递负值，从后往前，如果没有参数则复制原始数组
+* slice(start,end)：从数组提取指定元素，返回新数组，不包含结束索引，省略end后返回之后所有数组，可以传递负值，从后往前，如果没有参数则复制原始数组（纯函数：不改变原数组，没有副作用，返回一个数组）
 * splice(start,num,string)：删除数组指定元素，修改原数组，将删除元素返回，string会替换删除元素位置
-* concat：连接两个或多个数组，并返回新数组
-* join(’-‘)：数组转换没字符串，并以指定连接符连接，默认为逗号
+* concat：连接两个或多个数组，并返回新数组（纯函数）
+* join(’-‘)：数组转换为字符串，并以指定连接符连接，默认为逗号
 * reverse：反转数组，影响原数组
 * sort：默认按照unicode编码进行排序，浏览器会根据返回值正负调换位置
 
@@ -176,11 +176,26 @@ var result = [...arr3].sort(function(a,b){
 arr.forEach(function(value,index,obj){
     console.log(value+'=='+index)
   })
+  
+//---------------forEach是或否会改变原来数组---------------------
+var arr1 = [1,2,3,4];
+var arr2 = [{a:1},{a:2},{a:3}];
+ 
+arr1.forEach(item =>{
+  item = item * item;
+});
+arr2.forEach(item =>{
+  item.a = item.a * item.a;
+});
+console.log(arr1); // [1,2,3,4]
+console.log(arr2); // [{a:1},{a:4},{a:9}]
+//forEach 在对 value 进行修改的时候，如果 value 是原始类型的值，value 对应的 的内存地址实际并没有变化
+//如果 value 是 引用类型的值，value 对应多的内存地址也没有变化，但是对应的值，已经重写了
 ```
 
-* map：映射方法，使用方法与forEach类似，返回一个新的数组，map方法不会对空数组进行检测，也不会改变原始数组，有可能需要对数组加空值兼容，会调用两次
+* map：映射方法，使用方法与forEach类似，返回一个新的数组，map方法不会对空数组进行检测，也不会改变原始数组，有可能需要对数组加空值兼容，会调用两次（纯函数）
 
-* filter：筛选数组，把所有满足条件的元素生成数组并返回，遇见return不会终止迭代（当业务需求只要查到有这个数据就可以，filter就不太适用了，可以使用find）（关注你满足条件的所有值）
+* filter：筛选数组，把所有满足条件的元素生成数组并返回，遇见return不会终止迭代（当业务需求只要查到有这个数据就可以，filter就不太适用了，可以使用find）（关注你满足条件的所有值）（纯函数）
 
 ```javascript
 var arr = [11,24,53,25,77,90,199];
@@ -197,7 +212,7 @@ var arr = [11,24,53,25,77,90,199];
 var result = arr.some(function(value,index,obj){
     return value>=59
   })
-console.log(result) //[24, 53, 25, 77, 90, 199]
+console.log(result) // true
 ```
 
 * every：与some用法类似，如果该函数所有一项返回true,则返回true。一旦有一项不满足则返回flase
@@ -247,7 +262,7 @@ console.log(arr) // ['tom','65','男',['jane','john','Mary']]
   var result = arrobj.find((item)=>{
     return item.age == '18'
   })
-  console.log(result);
+  console.log(result); // {name: "Lily", age: "18"}
 ```
 
 * findIndex()：与find使用方法一致，返回对应值的下标值
@@ -271,7 +286,7 @@ console.log(arr) // ['tom','65','男',['jane','john','Mary']]
 // [1, 2, 4, 5]，如果原数组有空位，flat()方法会跳过空位
 ```
 
-* flatMap方法：将原数组的每个成员执行一个函数，返回一个新的数组，不改变原始数组，只能占展开一层数组
+* flatMap方法：将原数组的每个成员执行一个函数，返回一个新的数组，不改变原始数组，只能展开一层数组
 
 ```javascript
 [2, 3, 4].flatMap((x) => [x, x * 2])
@@ -282,25 +297,29 @@ console.log(arr) // ['tom','65','男',['jane','john','Mary']]
 * 获取数组的最大值：Math.max(...arr)，最小值：Math.min(...arr)
 
 ### 函数方法
-* call：指定当前this指向谁，call可以将实参在对象之后依次传递，也可以调用函数，可以实现继承	立即执行
+* call：指定当前this指向谁，call可以将实参在对象之后依次传递，也可以调用函数，可以实现继承，立即执行
 * apply：apply需要将实参封装到数组统一传递，可以借助其他内置对象调用，立即执行
-* bind()：也是重新定向this，需要接收返回值然后再次调用	回调执行
+* bind()：也是重新定向this，需要接收返回值然后再次调用，bind只生效一次，回调执行
 
 ```javascript
 function fun(a,b){
-    console.log("a="+a)
-    console.log("b="+b)
-    console.log(this)
-  }
-  var obj = {}
-  fun(1,2);
-  fun.call(obj,1,2);
-  fun.apply(obj,[1,2]);
-  var newfun=fun.bind(obj,1,2);
-  newfun();
-  //call其他应用
-  var arr = [1,2,3,4,5];
-  console.log(Math.max.apply(Math,arr))
+  console.log("a="+a)
+  console.log("b="+b)
+  console.log(this)
+}
+var obj = {}
+var obj2 = {}
+fun(1,2);
+fun.call(obj,1,2);
+fun.apply(obj,[1,2]);
+var newfun=fun.bind(obj,1,2);
+newfun();
+// bind只生效一次
+var newfun=fun.bind(obj,1,2);
+newfun(obj2); // 这里this指向为obj而不是obj2
+//call其他应用
+var arr = [1,2,3,4,5];
+console.log(Math.max.apply(Math,arr))
 ```
 
 *  arguments：在调用函数时，所传递的实参都会在arguments中保存，是一个类数组对象
@@ -382,30 +401,32 @@ for (let i = 1; i < 321; i += 10) {
 }
 ```
 
+* contains：判断字符串中是否有子字符串。如果有则返回true，如果没有则返回false
+
 ### 正则表达式
 * 创建正则对象：语法：var 变量 = /正则表达式/匹配模式 或 var reg = new RegExp("a");
-> i：忽略大小写
-> g：全局
-> y：粘连	sticky模式，一般在连续匹配时使用
-> u：匹配中文时使用
-> s：dotall模式
-> | / []：表示或的意思，只要匹配其中一个就可以 
-> [a-z]：任意a-z	-：表示范围
-> [^ ]：除了括号以内的，取反
+> `i`：忽略大小写
+> `g`：全局
+> `y`：粘连	sticky模式，一般在连续匹配时使用
+> `u`：匹配中文时使用
+> `s`：dotall模式
+> `|` or`[]`：表示或的意思，只要匹配其中一个就可以 
+> `[a-z]`：任意a-z	-：表示范围
+> `[^ ]`：除了括号以内的，取反
 
-> { }：设置出现的次数,只对前面一个内容起作用，可以用括号成为一个整体
->> {3}：表示重复三次
->> {3,}：表示重复三次及三次以上
->> {3,10}：表示重复三次及三次以上，十次及十次以下
+> `{ }`：设置出现的次数,只对前面一个内容起作用，可以用括号成为一个整体
+>> `{3}`：表示重复三次
+>> `{3,}`：表示重复三次及三次以上
+>> `{3,10}`：表示重复三次及三次以上，十次及十次以下
 >> 使用unicode码典，console.log(/\u{20BB7}/u.test('𠮷'))
 
-> +：至少以一个相当于{1,}		表示>=1，可以出现1次或多次
-> 星号\*：0个或多个相当于{0,}	表示>=0，可以出现0次或多次
-> ？：0个或1个相当于{0,1}	表示1||0，可以出现1次或0次
-> /^a/ | /a$/:表示开头，结尾
-> 点.：任意字符	添加u才可以匹配大于两个字节的字符，不支持四个字节的utf16字符，行中止符（\n,\t）
-> \w：任意字母，数字，_	[A-z0-9_]
-> \W：除了字母，数字，_	[^A-z0-9_]
+> `+`：至少以一个相当于{1,}		表示>=1，可以出现1次或多次		重复一次或更多次
+> `*`：0个或多个相当于{0,}	表示>=0，可以出现0次或多次		重复零次或更多次
+> `？`：0个或1个相当于{0,1}	表示1||0，可以出现1次或0次		重复零次或一次
+> `/^a/` and `/a$/`:表示开头，结尾
+> `.`：任意字符	添加u才可以匹配大于两个字节的字符，不支持四个字节的utf16字符，行中止符（\n,\t）
+> \w：任意字母，数字，_	`[A-z0-9_]`
+> \W：除了字母，数字，_	`[^A-z0-9_]`
 > \d：任意数字	[0-9]
 > \D：除了数字	[^0-9]
 > \s：空格，换行符，制表符		[\t\n\x0B\f\r]
@@ -423,7 +444,7 @@ for (let i = 1; i < 321; i += 10) {
   //true
 ```
 
-* 替换replacr：replace(正则表达式,替换内容)
+* 替换replace：replace(正则表达式,替换内容)
 * 使用dotAll进行验证是否开启dotall模式，使用flags查看开启什么模式
 
 ```javascript
@@ -511,6 +532,20 @@ function scrollWindow(){
 >beforeend: 插入元素内部的最后一个子节点之后
 >afterend: 元素自身的后面
 
+* getBoundingClientRect()：获取该元素的基础属性
+```javascript
+DOMRect {x: 8, y: -200, width: 200, height: 200, top: -200, …}
+    bottom: 0
+    height: 200
+    left: 8
+    right: 208
+    top: -200
+    width: 200
+    x: 8
+    y: -200
+    __proto__: DOMRect
+```
+
 ### 操作样式
 * 语法：元素.style.样式名 = 样式值 / 元素.style.样式名		修改 / 读取的是内嵌样式
 * 语法：元素.currentStyle.样式名 = 样式值				只支持IE浏览器
@@ -571,7 +606,7 @@ function scrollWindow(){
 * onresize：事件会在窗口或框架被调整大小时发生
 
 ### 事件绑定
-* addEventListener(a,b,c)：添加事件：a-事件的字符串,不要on,b-回调函数,c-是否在捕获阶段触发事件,Boolean,一般为false,不支持IE8	eg：btn.addEventListener('click',function(){ },false)
+* addEventListener(a,b,c)：添加事件：a-事件的字符串,不要on，b-回调函数，c-布尔类型，默认是false（冒泡阶段执行）true(捕获阶段产生)，不支持IE8	eg：btn.addEventListener('click',function(){ },false)
 * removeEventListener：删除事件，不支持IE8
 * attachEvent(a,b)：a-事件的字符串,需要on,b-回调函数	支持IE	this为window
 * detachEvent：删除事件，支持IE
@@ -593,7 +628,7 @@ list:
 
 ### 类型
 * undefined：是所有没有赋值变量的默认值，自动赋值
-* null：主动释放一个变量引用的对象，表示一个变量不再指向任何对象地址
+* null：主动释放一个变量引用的对象，表示一个变量不再指向任何对象地址，空指针对象
 * typeof：获取当前对象的类型,typeof检测类型有七种：string,number,boolean,undefined,object,function,symbol，console.log(typeof null)返回object
 * constructor属性：属性返回所有 JavaScript 变量的构造函数 eg：Number(),可以判断对象属性
 * parseInt()：获取整数	parseInt(num)
@@ -610,13 +645,18 @@ list:
 * this取什么值是在函数执行的时候确认而不是在函数定义的时候确认的
 * 当作普通函数调用返回window
 * 使用call apply bind后，传入什么绑定什么
-* 作为对象方法调用 返回对象本身
+* 作为对象方法调用 返回最近的引用
 * class方法中调用，返回实例本身
 * 箭头函数，永远会找他上级作用域this的指向
+* 事件处理函数内部的this总是指向被绑的DOM元素
+* Web：window，self，frames，this
+* Node：global
+* Workers：self
+* 通用：globalThis，可以在以上三种环境中使用
 
 ## 闭包
 * 指有权访问另一个函数的作用域中变量的函数，意思就是在全局访问父函数所调用的子函数。由于闭包内部变量优先级高于外部变量,所以多查找作用域链中的一个层次,就会在一定程度上影响查找速度，内存浪费
-* 闭包：自由变量的查找是在函数定义的地方，向上级作用域查找，不是在执行的地方。
+* 闭包：**自由变量的查找是在函数定义的地方，向上级作用域查找，不是在执行的地方**。
 
 ```javascript
   function fun(){
@@ -633,6 +673,7 @@ list:
   // }
 ```
 
+* 闭包应用：隐藏数据
 * 优点：延伸了变量的作用范围，加强封装性,可以达到对变量的保护作用
 * 缺点：由于闭包内部变量优先级高于外部变量,所以多查找作用域链中的一个层次,就会在一定程度上影响查找速度，内存浪费，参数和变量不会被垃圾回收机制回收
 
@@ -680,18 +721,21 @@ list:
   var o = {};
   function Deppcopy(oldObj,newObj){
     for(var key in oldObj){
-      var item = oldObj[key];
-      if(item instanceof Array){
-        //判断是否为数组,为什么先判断数组，因为数组也包括在Object，如果先判断Object则可能把数组略过
-        newObj[key] = [];
-        Deppcopy(item,newObj[key]);
-      }else if(item instanceof Object){
-        //判断是否为Object
-        newObj[key] = {};
-        Deppcopy(item,newObj[key]);
-      }else{
-        //否则为简单类型
-        newObj[key] = item;
+      // 判断是否是自身属性
+      if (oldData.hasOwnProperty(key)) {
+        var item = oldObj[key];
+        if(item instanceof Array){
+          //判断是否为数组,为什么先判断数组，因为数组也包括在Object，如果先判断Object则可能把数组略过
+          newObj[key] = [];
+          Deppcopy(item,newObj[key]);
+        }else if(item instanceof Object){
+          //判断是否为Object
+          newObj[key] = {};
+          Deppcopy(item,newObj[key]);
+        }else{
+          //否则为简单类型
+          newObj[key] = item;
+        }
       }
     }
   }
@@ -708,13 +752,13 @@ function deepClone (obj) {
     if (obj instanceof RegExp) {
       return new RegExp(obj)
     }
-    // 考虑new问题
+    // 考虑Date问题
     if (obj instanceof Date) {
       return new Date(obj)
     }
     // 考虑函数问题
     if (obj instanceof Function) {
-      return new Function(oldobj)
+      return new Function(obj)
     }
     for (let key in obj) {
       // 判断是否为私有属性
@@ -834,15 +878,15 @@ console.log(monkey.age) // 125
 ```javascript
 // 静态方法
 // ES5创建类
-let Animate = function (type) {
+var Animate = function (type) {
   this.type = type
 }
-// ES5实例方法
+// ES5实例方法-----------------实例->挂原型
 Animate.prototype.eat = function () {
   Animate.walk()
   console.log('i am eat food')
 }
-// ES5静态方法
+// ES5静态方法-----------------静态->挂自己
 Animate.walk = function () {
   console.log('i am walking')
 }
@@ -876,23 +920,20 @@ let Animate = function (type) {
 }
 Animate.prototype.eat = function () {
   Animate.walk()
-  console.log('i am eat food')
+  console.log('i am eat food', this.type)
 }
 Animate.walk = function () {
   console.log('i am walk')
 }
 
-let Dog = function () {
-  // 第一步：初始化父类的构造函数
-  Animate.call(this, 'dog')
-  this.run = function () {
-    console.log('i can run')
-  }
+let Dog = function (type) {
+// 第一步：初始化父类的构造函数
+  Animate.call(this, type)
 }
-// 第二步：将子原型等于父原型
-Dog.prototype = Animate.prototype
+// 第二步：父级实例化到子原型上
+Dog.prototype = new Animate()
 
-let dog = new Dog()
+let dog = new Dog('dog')
 dog.eat()
 
 // ES6
@@ -923,9 +964,9 @@ let dog = new Dog('dog')
 dog.eat()
 ```
 
-
-
-
+* 每个class都有显示原型prototype
+* 每个实例都有隐式原型`__proto__`
+* 实例的`__proto__`指向对应的class的prototype
 
 ### 变量声明
 #### let
@@ -948,7 +989,7 @@ dog.eat()
 * const属性包含let属性
 * const定义为常量
 * 声明const必须有初始值
-* 常量赋值后，值不能修改
+* 常量赋值后，地址值不能修改
 >基本数据类型是不能通过重新赋值来改变，并且不能重新声明
 >复杂数据类型可以修改值但不能修改地址
 
@@ -978,18 +1019,50 @@ dog.eat()
 * 数组解构允许我们按照一一对应的关系从数组中提取值然后将值赋给变量
 
 ```javascript
-  let [a,b,c,d] = [1,2,3];
-  console.log(a); //1
-  console.log(b); //2
-  console.log(c); //3
-  console.log(d); //undefined
-let [a,b,c,d] = 'abcdefg';
+let [a,b,c,d] = [1,2,3];
+console.log(a); //1
+console.log(b); //2
+console.log(c); //3
+console.log(d); //undefined
+let [a,b,c,d] = 'abcdefg
+console.log(a,b,c,d) // a b c d
 let [qq, ww] = new Map([[1, 2], [3, 4]])
+console.log(qq,ww) // [1, 2] ,[3, 4]
 // 如果需要略过中间数据，可以直接写成以下方式
 let [a,, b] = new Set([1, 2, 3, 4, 5])	// 1 3
 
 let [one=0, ...two] = [1,2,3]	// one=0:当one没有值时默认值为0
 console.log(one, two) //  1 [2, 3]
+```
+
+```javascript
+// 赋值简单变量
+let arr = ['a', 'b', 'c', 'd'] // a c
+let arr = '1234' // 1 3
+let arr = new Set([1, 2, 3, 4]) // 1 3
+let arr = new Map([[1, 2], [3, 4], [5, 6]]) // [1,2] [5,6]
+let [firstname, , thirdname] = arr
+console.log(firstname, thirdname)
+
+// 赋值对象的属性
+let user = { name: 's', surname: 't' };
+console.log(user); // {name: "s", surname: "t"}
+[user.name, user.surname] = [1, 2]
+console.log(user) // {name: 1, surname: 2}
+
+// 赋值循环
+let user = { name: 's', surname: 't' }
+for (const [k, v] of Object.entries(user)) {
+  console.log(k, v) // name s   surname t
+}
+
+// 参数不确定赋值
+let arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+let [first, curr, ...last] = arr
+console.log(first, curr, last) // 1 2 [3, 4, 5, 6, 7, 8, 9]
+let arr = []
+let [firstName = 'hello', curName, ...last] = arr
+console.log(firstName, curName, last) // hello undefined []
 ```
 
 #### 对象解构
@@ -1012,16 +1085,16 @@ console.log(user) // {name: 1, surname: 2}
   console.log(age);   //23
   console.log(gender);   //男
   
-  let { title, ...last } = obj
+  let { name, ...last } = person
   console.log(name, last) // byron {age: 23, gender: '男'}
   //方法二
-  let {name: myName, age:myAge, gender: sex} = person;
+  let {name: myName, age: myAge, gender: sex} = person;
   console.log(myName);  //byron
   console.log(myAge);   //23
   console.log(sex);   //男
   
   // 复杂结构解构
-  let obj = {
+let obj = {
   size: {
     width: 100,
     height: {
@@ -1033,6 +1106,23 @@ console.log(user) // {name: 1, surname: 2}
 }
 let { size: { width: width2, height: { option } }, items: [a, b], extra } = obj
 console.log(width2, option, a, b, extra) // 100 200 "cake" "double" true
+```
+
+```javascript
+let options = {
+  size: {
+    width: {
+      size: {
+        width: 200
+      }
+    },
+    height: 200
+  },
+  items: ['Cake', 'Donut'],
+  extra: true
+}
+const { size: { width: { size: { width } } }, items: [, two], extra } = options
+console.log(width, two, extra)
 ```
 
 ### 箭头函数
@@ -1063,40 +1153,38 @@ console.log(width2, option, a, b, extra) // 100 200 "cake" "double" true
   })
 ```
 
-* 箭头函数的this是在定义函数时绑定的，不是在执行过程中绑定的，函数定义时，this就继承了定义函数的对象，一般是全局对象，被普通函数包含指向上一层，不可以被call、apply、bind进行修改this值
+* 箭头函数this指向外层作用域的this指向（外层作用域不能为箭头函数）
 * 箭头函数不能使用arguments
-
-### 剩余参数
-* 剩余参数语法允许我们将一个不定数量的参数表示为一个数组
-
-```javascript
-  const sum = (...arg) => {
-    let total = 0;
-    arg.forEach(item => total+=item);
-    return total;
-  }
-  console.log(sum(1,2,3,4,5,6));
-  console.log(sum(16,23,37,41,56,69));
-```
+* 箭头函数一定不是一个构造器，不能new
+* 不可以被call、apply、bind进行修改this值
 
 ### 扩展运算符
 * 扩展运算符可以将数组拆分成以逗号分隔的参数序列，使用的iterator接口
 
 ```javascript
-  let arr = [1,2,3]
-  let arr1 = [4,5,6]
-  let arr2 = [...arr,...arr1]
-  console.log(...arr);  ///1 2 3
-  console.log(arr2);  //[1, 2, 3, 4, 5, 6]
-  arr.push(...arr2)
-  console.log(arr); //[1, 2, 3, 1, 2, 3, 4, 5, 6]
-  //转换为数组
-    var divs = document.querySelectorAll('div');
-  let divarr = [];
-  console.log(divs);  //NodeList(5) [div, div, div, div, div] 伪数组
-  console.log(...divs); //<div></div><div></div><div></div><div></div><div></div>
-  divarr.push(...divs);
-  console.log(divarr);  //(5) [div, div, div, div, div]
+let arr = [1,2,3]
+let arr1 = [4,5,6]
+let arr2 = [...arr,...arr1]
+console.log(...arr);  ///1 2 3
+console.log(arr2);  //[1, 2, 3, 4, 5, 6]
+arr.push(...arr2)
+console.log(arr); //[1, 2, 3, 1, 2, 3, 4, 5, 6]
+//转换为数组
+var divs = document.querySelectorAll('div');
+let divarr = [];
+console.log(divs);  //NodeList(5) [div, div, div, div, div] 伪数组
+console.log(...divs); //<div></div><div></div><div></div><div></div><div></div>
+divarr.push(...divs);
+console.log(divarr);  //(5) [div, div, div, div, div]
+
+// 剩余参数语法允许我们将一个不定数量的参数表示为一个数组
+const sum = (...arg) => {
+  let total = 0;
+  arg.forEach(item => total+=item);
+  return total;
+}
+console.log(sum(1,2,3,4,5,6));
+console.log(sum(16,23,37,41,56,69));
 ```
 
 ### 模板字符串	``
@@ -1145,11 +1233,11 @@ console.log(width2, option, a, b, extra) // 100 200 "cake" "double" true
   s4.clear()
   console.log(s4.size);	//0
   // 获取key值
-  console.log(s4.keys())
+  console.log(s4.keys()) // {"a", "b"}
   // 获取值内容
-  console.log(s4.values())
+  console.log(s4.values()) // {"a", "b"}
   // 获取键值对
-  console.log(s4.entries())
+  console.log(s4.entries()) // {"a" => "a", "b" => "b"}
 ```
 
 * 遍历Set需要使用forEach，for of方法方法
@@ -1201,7 +1289,7 @@ map.clear()
 // 统计数据
 console.log(map.size)
 // 查找（按照索引值，key值查找）
-console.log(map.has(2))
+console.log(map.has(2)) // 返回一个Boolean值
 // 获取对应的value
 console.log(map.get(1))
 // 获取key值
@@ -1222,57 +1310,6 @@ for (let [key, value] of map) {
 
 * WeakMap与map区别：WeakMap只允许接收对象类型的key
 
-
-### 解构
-#### 数组解构赋值
-```javascript
-// 赋值简单变量
-let arr = ['a', 'b', 'c', 'd']
-let arr = '1234'
-let arr = new Set([1, 2, 3, 4])
-let arr = new Map([[1, 2], [3, 4], [5, 6]])
-let [firstname, , thirdname] = arr
-console.log(firstname, thirdname)
-
-// 赋值对象的属性
-let user = { name: 's', surname: 't' }
-console.log(user);
-[user.name, user.surname] = [1, 2]
-console.log(user)
-
-// 赋值循环
-let user = { name: 's', surname: 't' }
-for (const [k, v] of Object.entries(user)) {
-  console.log(k, v)
-}
-
-// 参数不确定赋值
-let arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-let [first, curr, ...last] = arr
-console.log(first, curr, last)
-let arr = []
-let [firstName = 'hello', curName, ...last] = arr
-console.log(firstName, curName, last)
-```
-
-#### Object解构赋值
-```javascript
-let options = {
-  size: {
-    width: {
-      size: {
-        width: 200
-      }
-    },
-    height: 200
-  },
-  items: ['Cake', 'Donut'],
-  extra: true
-}
-const { size: { width: { size: { width } } }, items: [, two], extra } = options
-console.log(width, two, extra)
-```
-
 ### Promise 解决异步回调
 #### Promise概述
 * Promise对象，代表了某个时间1将要发生的事件（通常是异步操作）
@@ -1280,7 +1317,7 @@ console.log(width, two, extra)
 * 回调地狱是什么：回调函数嵌套使用，外部回调函数异步执行的结果是嵌套的回调函数执行的条件，缺点：不便于阅读，不便于异常处理
 * promise对象有三个状态：
 >pending：初始化状态
->resolved：成功状态
+>resolved / fulfilled：成功状态
 >rejected：失败状态
 
 * 思路
@@ -1445,7 +1482,7 @@ five[回调onRejected .then / .catch] --> six[新的promise对象]
   promise.then((value) => { //接收得到成功的value，onResolved
     console.log(value);
     console.log(promise);
-  },(reason) => {     //接收得到失败的value，onRejected
+  },(reason) => {     //接收得到失败的reason，onRejected
     console.log(reason);
     console.log(promise);
   })
@@ -1514,9 +1551,9 @@ five[回调onRejected .then / .catch] --> six[新的promise对象]
   const pall = Promise.all([p1,p3]);
   // const pall = Promise.all([p1,p2,p3]);
   pall.then(value => {
-    console.log('onResolved()',value);  //onResolved() (2) [1, 3]
+    console.log('onResolved()',value);  //onResolved() [1, 3]
   }).catch(reason => {
-    console.log('onRejected()',reason); //6promiseApi.html:36 onRejected() 2
+    console.log('onRejected()',reason); //onRejected() 2
   })
 
   //3、Promise.race([]) 接收一个数组，看数组中那个先执行完成，就返回那个，当第一个执行完成后，其他的就不用执行了，数组可以接收非promise
@@ -1526,6 +1563,15 @@ five[回调onRejected .then / .catch] --> six[新的promise对象]
   }).catch(reason => {
     console.log('onRejected()',reason);
   })
+  //4、Promise.allSettled([]),接收一个数组，返回该数组所有的执行结果
+  Promise.allSettled([
+    Promise.resolve('a'),
+    Promise.reject('b')
+  ]).then(value => {
+    console.log(value)
+  })
+  //0: {status: "fulfilled", value: "a"}
+  //1: {status: "rejected", reason: "b"}
 ```
 
 ##### promise关键问题
@@ -1535,8 +1581,8 @@ five[回调onRejected .then / .catch] --> six[新的promise对象]
   const promise = new Promise((resolve, reject) => {
     // 1、resolve后变为resolved成功状态
     // resolve('1')  //resolve: 1
-    // 2、reject变为rejected成功状态
-    // reject('2')  // resolve: 1
+    // 2、reject后变为rejected失败状态
+    // reject('2')  // reject: 2
     // 3、抛出异常为变为rejected状态，reason为抛出异常内容
     throw new Error('3') // reject: Error: 3
   })
@@ -1596,6 +1642,61 @@ new Promise((resolve,reject) => {
 
 * 问题七：中断promise链
 >在回调函数中返回一个pending状态的promise对象 return new Promise(() => {})机会中断promise
+
+* 问题八：promise链式调用
+>链式调用中，只有前一个then的回调执行完毕后，跟着的then中的回调才会被假如至微任务队列
+
+```javascript
+Promise.resolve().then(value => {
+  console.log('thne1')
+  Promise.resolve().then(value => {
+    console.log('then1-1')
+  })
+  }).then(value => {
+    console.log('then2')
+  })
+// thne1 -> then1-1 -> then2
+```
+
+>每个链式调用开端会首先一次进入微队列任务
+
+```javascript
+let p = Promise.resolve()
+
+  p.then(value => {
+    console.log('thne1')
+    Promise.resolve().then(value => {
+      console.log('then1-1')
+    })
+  }).then(value => {
+  console.log('thne1-2')
+  })
+
+  p.then(value => {
+    console.log('thne2')
+  })
+// thne1 -> then2 -> then1-1 -> then1-2
+```
+
+>同一个promise的每个链式调用的开端会首先依次进入微任务队列
+
+```javascript
+    let p = Promise.resolve(11111).then(value => {
+      console.log('thne1')
+      Promise.resolve().then(value => {
+        console.log('thne1-1')
+      })
+    }).then(value => {
+      console.log('thne2')
+      return 123123
+    })
+
+    p.then(value => {
+      console.log(value)
+      console.log('thne3')
+    })
+    // thne1 -> then1-1 -> then2 -> 123123 -> then3
+```
 
 * promise的缺点：
 >promise一旦新建就会立即执行，无法中途取消
@@ -2240,12 +2341,102 @@ Object.assign(目标对象，需要添加对象1，需要添加对象2...)
 * Object.getOwnPropertyDescriptors(obj)：查看对象的所有信息
 * Object.getOwnPropertyDescriptor(data, '字段1')：查看指定对象指定值的信息
 
-* Object.fromEntries：可以直接获取对应key的value，括号内部要使用数组，相当与把数组转换为对象，当然可以使用Object.entries将对象转换为数组
+* Object.fromEntries：可以直接获取对应key的value，括号内部要使用数组，**相当与把数组转换为对象**，当然可以使用Object.entries将**对象转换为数组**
 
 ```javascript
 // 使用fromEntries需要固定此数据类型[['foo', 1], ['bar', 2]]
 const arr = [['foo', 1], ['bar', 2]]
 const obj = Object.fromEntries(arr)
-console.log(obj.bar) // 2
+console.log(obj) // {foo: 1, bar: 2}
 ```
 
+## Fetch
+* fetch必须接收一个参数—资源的路径，无论请求成功与否，它都返回一个 Promise 对象，当接收到一个代表错误的 HTTP 状态码时，从 fetch() 返回的 Promise 不会被标记为 reject， 即使响应的 HTTP 状态码是 404 或 500，只有网络故障时才会返回reject
+
+### 基本使用
+
+```javascript
+fetch('http://localhost:5501/data.json').then(value => {
+    console.log(value)
+    return value.json()
+  }).then(value => {
+    console.log(value)
+  })
+```
+
+## 发布订阅模式
+```javascript
+// 发布 -> 中间代理 <- 订阅
+class Events {
+  constructor() {
+    // 存储回调函数
+    this.callback = [],
+    // 存储回调后的数据
+    this.result = []
+  }
+  // 订阅
+  on(callback) {
+    this.callback.push(callback)
+  }
+  // 发布
+  emit(data) {
+    this.result.push(data)
+    this.callback.forEach(item => item(this.result))
+  }
+}
+// 开始测试
+let eve = new Events()
+eve.on(function(arr) {
+  if(arr.length === 3) {
+    console.log(arr)
+  }
+})
+
+let p1 = new Promise(resolve => resolve(1))
+let p2 = new Promise(resolve => setTimeout(resolve, 1000, 2))
+let p3 = new Promise(resolve => setTimeout(resolve, 5000, 3))
+p1.then(value => eve.emit(value))
+p2.then(value => eve.emit(value))
+p3.then(value => eve.emit(value))
+```
+
+## 观察者模式
+* 观察者模式包括发布订阅模式
+
+```javascript
+// 被观察者
+class Subject {
+  constructor(name, state) {
+    this.name = name,
+    this.state = state,
+    this.observers = [] // 存放观察者
+  }
+  // 被观察者提供一个接收观察者的方法
+  attach(observer) {
+    this.observers.push(observer)
+  }
+  // 修改观察者的状态
+  setState(newState) {
+    this.state = newState
+    this.observers.forEach(obs => obs.upDate(this.state))
+  }
+}
+
+// 观察者
+class Observer {
+  constructor(name) {
+    this.name = name
+  }
+  // 观察者接收被观察者状态
+  upDate(state) {
+    console.log(`${this.name}发现目标${state}`)
+  }
+}
+
+let s = new Subject('被观察者', '状态良好')
+let o1 = new Observer('观察者one')
+let o2 = new Observer('观察者two')
+s.attach(o1) // 被观察者添加观察者1
+s.attach(o2) // 被观察者添加观察者2
+s.setState('状态爆炸') // 被观察者修改状态
+```

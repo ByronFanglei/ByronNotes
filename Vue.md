@@ -11,6 +11,7 @@
     <p>{{10>20?'大':'小'}}</p>
     <p>{{message}}</p>
     <p>{{test}}</p>
+		<span v-text='message'></span>
     <p v-html='test'></p>
   </div>
   <div>{{10+20}}</div>
@@ -27,6 +28,9 @@
 </script>
 ```
 
+### v-text
+*  v-text可以理解为进阶版的插值表达式，当网速较慢时，使用插值页面可能会先出现{{message}}在出现对应的值，若使用v-text='message'后，页面不会出现双花括号，进而不会影响用户体验
+
 ### v-if,v-show
 >v-if：动态的创建和删除节点，为false时标签被删除
 >v-show：动态的显示和隐藏节点，为false时自动为标签添加display:none
@@ -37,13 +41,31 @@
 
 * v-model.lazy：失去焦点那一刻进行同步
 * v-model.trim：去除两边空格
-* v-model.number：转换为number类型
+* v-model.number：只能输入数字类型
+
+### v-pre：原样输出
+```javascript
+// byron
+<p>{{message}}</p>
+// {{message}}
+<p v-pre>{{message}}</p>
+var app = new Vue({
+  el: '#app',
+  data: {
+    message: 'byron'
+  }
+})
+```
+
+### v-cloak：渲染完成后才显示
+### v-once：只在第一次渲染时进行渲染，之后不进行渲染
 
 ### v-class：动态绑定class属性名，简写 :class
 >绑定对象与数组的区别，对象不能直接添加class属性名，即使添加成功，也无效，数组方式可以自由的添加
 
 ```javascript
 <p :class="isClass?'red':'blue'" @click='handChangeColor'>点击切换颜色</p>
+<p :class='{classA:isClass}'>111111</p>
 <p :class='classobj'>111111</p>
 <p :class='classarr'>22222</p>
 var app = new Vue({
@@ -85,9 +107,10 @@ var app = new Vue({
 ### 事件修饰符，阻止冒泡
 
 ```html
-<ul @click.self='handUlClick()'>  <!-- 给父组件添加阻止冒泡事件 -->
-  <li @click.stop='handLiClick()'>111</li>  <!--给子组件添加阻止冒泡事件-->
+<ul @click.self='handUlClick()'>  <!-- 给当前阻止冒泡事件，即不是从内部触发的 -->
+  <li @click.stop='handLiClick()'>111</li>  <!--阻止冒泡事件-->
   <li @click.once='handLiClick()'>222</li>  <!--添加单次绑定事件，只能触发一次-->
+  <li @click.capture='handLiClick()'>333</li> <!--添加事件捕获模式，即内部元素触发的事件先在此处理，然后才交由内部元素进行处理 -->
 </ul>
 <a href="http:www.baidu.com" @click.prevent='handAClick($event)' >跳转</a> <!--阻止默认跳转-->
 ```
@@ -105,7 +128,7 @@ var app = new Vue({
 ```
 
 ### 鼠标按键修饰符
-```javascript
+```html
 <button @click.left='onleft'>left</button>
 <button @click.right='onright'>right</button>
 <button @click.middle='onmiddle'>middle</button>
@@ -113,7 +136,7 @@ var app = new Vue({
 
 ### 计算属性(computed)与方法(methods)，watch的区别
 >methods中写的是一些方法，用于处理业务逻辑
->computed的本质是一个方法，性能更高，会优先使用缓存
+>computed的本质是一个方法，性能更高，会优先使用缓存，会先对data数据做变化后再使用
 >watch用于监听data中的以及其他（比如路由）的数据的变化，当被监听的内容发生变化时，触发相应的函数，从而进行某些逻辑操作。可以认为是methods和computed的结合体
 
 ### watch
@@ -127,7 +150,7 @@ watch: {
       handler (old, newdata) {
         console.log(old, newdata)  // 获取不到old
       },
-      deep: true, // 深度监听
+      deep: true, // 深度监听，数组的变化不需要深度watch
       immediate: true // 立即执行，而不是对应值变化后执行
     }
   }
@@ -136,6 +159,11 @@ watch: {
 ### ref
 >放在标签上，获取原生DOM
 >放在组件上，拿到组件对象，可以对子组件进行随意的控制，但是不建议使用，耦合度高
+
+```javascript
+<input type="text" ref='inp'>
+this.$refs.inp.value // 获取指定DOM的value
+```
 
 ### 事件总线(bus总线)，非父子通信
 ```javascript
@@ -196,7 +224,7 @@ watch: {
 
 ### 动态组件
 * component元素，动态绑定多个组件到他的is属性中
-* keep-alive：保留状态，避免重新渲染
+* keep-alive：保留状态，避免重新渲染，对组件进行缓存
 
 ```javascript
 <body>
@@ -324,7 +352,7 @@ watch: {
 </script>
 ```
 
-### vue指令用法
+### vue自定义指令用法
 * 操作底层DOM
 
 ```javascript
@@ -351,6 +379,18 @@ watch: {
     el: '#app'
   })
 </script>
+  
+directives: {
+  hello: {
+    inserted(el, bind) {
+      el.style.background = bind.value
+    },
+      update(el, bind) {
+        console.log(el, bind)
+        el.style.background = bind.value
+      }
+  }
+}
 ```
 
 ### vue过滤
@@ -452,10 +492,15 @@ export default {
       this.list.push(`${Date.now()}`)
       // 异步渲染，$nextTick 待 DOM 渲染完再回调
       // 页面渲染时会将 data 的修改做整合，多次 data 修改只会渲染一次
-      // 异步渲染
+      // 异步渲染，返回promise
       this.$nextTick(() => {
         const ulEle = this.$refs.lil
         console.log(ulEle.childNodes.length)
+      })
+      // 或者这样
+      const elem = this.$refs.ull
+      this.$nextTick().then(function () {
+        console.log(elem.childNodes.length)
       })
     }
   }
@@ -613,7 +658,7 @@ export default {
 * 组件编写与vue实例的区别
 >自定义组件需要有一个root element
 >父子组件的data是无法共享的
->组件可以有data,methods,computed但是data必须是一个函数
+>组件可以有data，methods，computed但是data必须是一个函数
 
 ### 全局组件
 ```javascript
@@ -666,8 +711,8 @@ export default {
 ```javascript
 <body>
   <div id="app">
-    <navbar myname="home" :myshow="false"></navbar>
-    <navbar myname="list" :myshow="true"></navbar>
+    <navbar :myname="home" :myshow="false"></navbar>
+    <navbar :myname="list" :myshow="true"></navbar>
     <navbar :myname="parentName" :myshow="true"></navbar>
   </div>
 </body>
@@ -736,13 +781,13 @@ export default {
 
 ## 生命周期
 ### vue的生命周期有哪些
-* beforeCreate：创建之前
-* created：创建完成后 // 初始化实例，并没有开始渲染
-* beforeMount：挂载之前
-* mounted：挂载完了 // 页面绘制完成，一般在该函数下获取网络数据
+* beforeCreate：创建之前，初始化vue示例，data和methods中的数据都未初始化
+* created：创建完成后 // 初始化实例，并没有开始渲染，data和methods初始化完成
+* beforeMount：挂载之前，vue中的指令执行最终生成编译好的字符串模寄存在虚拟dom中，并没有真正生成到页面上
+* mounted：挂载完了 // 页面绘制完成，一般在该函数下获取网络数据，将虚拟dom挂载到页面上
 * beforeUpdate：更新之前
 * updated：更新完了
-* beforeDestroy：销毁之前 // 解除自定义事件event$off，清除定时器，解除绑定的DOM事件（scroll等）
+* beforeDestroy：销毁之前 // 解除自定义事件event.$off，清除定时器，解除绑定的DOM事件（scroll等）
 * destroyed：销毁完了
 
 ### vue父子组件生命周期怎么执行
@@ -826,7 +871,11 @@ module.exports = {
       '/v2/': {
         // 设置代理地址  切记添加https://或http://
         target: 'https://api.douban.com',
-        changeOrigin: true
+        changeOrigin: true，
+        pathRewrite: {
+        // 当访问开头为api时，将/api设置为空在进行访问
+          '/api': ''
+        }
       }
     }
   }
@@ -894,6 +943,7 @@ const routes = [{
   }]
 }]
 export default router
+// path后面加/和不加区别：添加/标识根路径，多次点击时不会叠加路径，不添加/，则使用的是相对路径，在路由嵌套时，当多次点击使用了子组件的路由时相对路径会叠加，从而使得项目因缺乏路径而崩溃
 ```
 
 ### 声明式导航
