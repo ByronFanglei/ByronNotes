@@ -46,14 +46,31 @@ git status [filename]
 
 # 添加所有文件到暂存区
 git add .
+git add 文件名
+git add 文件名1 文件名2 文件名3
 
 # 提交暂存区的内容到本地仓库
 git commit -m '注释'
-# 提交暂存区的内容到本地仓库且跳过检测
+# 提交暂存区的内容到本地仓库且跳过检测，比如eslint检测
 git commit -m '注释' --no-verify
 
 # 查看当前文件每一行都是由谁编码
 git blame 文件名
+
+# 暂存区为空，比较工作区和最后一次commit提交的仓库
+git diff
+# 比较暂存区和最后一次commit提交的仓库
+git diff --cached
+# 比较工作区和最后一次commit提交的仓库
+git diff master
+
+# 查看文件提交记录
+git log
+# 查看所有分支的所有操作记录
+git reflog
+
+# Git对文件大小写不区分，需要添加此命令
+git config core.ignorecase false
 ```
 
 * 忽略文件操作配置
@@ -84,12 +101,14 @@ git branch
 git branch -r
 # 创建子分支
 git branch children
+# 创建子分支并切换到子分支
+git checkout -b children
 # 提交子分支
 git checkout children
-git commit 
+git commit -m '提交子分支'
 # 提交主分支
 git checkout master
-git commit
+git commit -m '提交主分支'
 # 将子分支合并到主分支
 git merge children
 
@@ -114,6 +133,27 @@ git commit
 # 再次切换到 children 分支，rebase 到 master 上
 git rebase master
 ```
+
+### git版本回退
+```shell
+# 查看问价历史版本
+git log
+git log --pretty=oneline
+
+# 第一种回退操作
+git reset --hard HEAD
+git push origin master -f
+# 回到过去后，要想再回到之前的最新版本的时候，则需要使用指令去查看历史操作得到最新的commit id
+
+# 第二种回退操作
+git revert HEAD
+git push origin master
+
+# 两种回退区别
+reset是指将HEAD指针指到指定提交，历史记录中不会出现放弃的提交记录。
+revert是放弃指定提交的修改，但是会生成一次新的提交，需要填写提交注释，以前的历史记录都在。
+```
+
 
 ### HEAD
 * HEAD 是一个对当前检出记录的符号引用 —— 也就是指向你正在其基础上进行工作的提交记录，HEAD 总是指向当前分支上最近一次提交记录
@@ -168,12 +208,52 @@ git stash drop 'stash名字'
 git stash show / git stash show -p # 查看全部diff
 ```
 
+### 合并多个commit
+* 当多人开发完毕后，每个人都会产生多个commit，为了便于后期的查看，需要将每个人的多次提交合并成一条提交
 
+1. 压缩commit
 
+```shell
+# 压缩前6个commit
+git rebase -i HEAD~6
+# 压缩当前hash值的commit到指定hash值的commit
+git rebase -i hash
+# 执行后，进入vim，倒序排列，最下面的是最新的commit
+```
 
+2. 合并commit
 
+```shell
+# pick 的意识是要执行这个 commit
+# squash 的意识是这个 commit 会被合并到前一个 commit
+# 在vim中进行修改前缀，需要commit的为 pick(不变)，需要合并的修改为squash or s，修改完毕后 :wx or :x 退出vim
+# 这里有一种情况，就是 3 4 5需要合并到1上，但是2需要commit，这时，就可以把第二条复制放到最后，然后，3 4 5改为 s，然后保存，退出vim即可
+```
 
+3. 是否有冲突
 
+```shell
+# git 会压缩提交历史，若有冲突，需要进行修改，修改的时候保留最新的历史记录，修改完之后输入以下命令
+git add .
+git rebase --continue
+
+# 若想退出放弃此次压缩，执行以下命令
+git rebase --abort
+
+# 若没有冲突或者解决冲突后，进入commit message编辑页面，修改 commit message完毕后 :wx or :x 退出vim。
+```
+
+4. 同步到远程仓库
+
+```shell
+git push -f
+# or
+git push --force
+# 执行完毕后，查看远程仓库commit是否合并到一起
+```
+
+### git命令速查表
+![image-20210224151739968](https://img-blog.csdn.net/20180816164553616?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xvdmVxdWFucXVxbg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 
 
 
