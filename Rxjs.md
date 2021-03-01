@@ -50,8 +50,8 @@ b[Subscription] --订阅---> d[Observer-two]
 * range：发出范围内数组序列，range(1,10) 发出1-10
 
 ## 常用Operators
-* take：取前多少笔数￥
-* filter：进行过滤 Boolean￥
+* take：取前多少笔数
+* filter：进行过滤 Boolean
 * map：遍历每个值并通过传入callback进行输出
 * mapTo：可以把传进来的值改成一个固定的值
 * first：取第一笔，与take(1)一致
@@ -62,17 +62,17 @@ b[Subscription] --订阅---> d[Observer-two]
 * startWith：在发出数据前塞入一个指定值
 * withLatestFrom：使用最新的值执行callback
 * scan：累加效果，类似于数组的reducer
-* buffer：把上游的多个数据缓存起来，当时机合适时再把汇聚的数据传给下游￥
-* bufferTime：把上游的多个数据缓存起来，等待指定时机更新数据￥
+* buffer：把上游的多个数据缓存起来，当时机合适时再把汇聚的数据传给下游
+* bufferTime：把上游的多个数据缓存起来，等待指定时机更新数据
 * bufferCount：把上游的多个数据缓存起来，等待指定数量更新数据
-* delay：延迟指定时间后触发￥
+* delay：延迟指定时间后触发
 * debounce：防抖，传入回调函数，在指定回调时间内发送出最新数据，收到一个事件后等一段时间，如果没有收到其他事件，才处理这个事件
-* debounceTime：防抖，传入指定时间，在指定时间内发送出最新数据￥
+* debounceTime：防抖，传入指定时间，在指定时间内发送出最新数据
 * throttle：节流，传入回调函数，在指定回调时间内发送出最新数据
-* throttleTime：节流，传入指定时间，在指定时间内发送出最新数据￥
-* distinct：过滤操作，如果有重复的值，就被过滤掉￥
-* distinctUntilChanged：过滤操作，每次都拿当前元素的后一个进行比较￥
-* retry：当发生错误时重新尝试，可以设置尝试次数￥
+* throttleTime：节流，传入指定时间，在指定时间内发送出最新数据
+* distinct：过滤操作，如果有重复的值，就被过滤掉
+* distinctUntilChanged：过滤操作，每次都拿当前元素的后一个进行比较
+* retry：当发生错误时重新尝试，可以设置尝试次数
 * retryWhen：可以传递一个callback对错误进行操作
 * repeat：重复操作，可以设置重复次数
 * tap：可以直接在pipe中获取当前数据流，且不影响数据流，透明地打印数据流中的值

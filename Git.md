@@ -99,6 +99,8 @@ doc/*.txt
 git branch
 # 查看远程分支
 git branch -r
+# 查看所有分支
+git branch -a
 # 创建子分支
 git branch children
 # 创建子分支并切换到子分支
