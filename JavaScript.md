@@ -480,18 +480,36 @@ console.log(tval) // 2
 ```
 
 ### 其他方法
-* parseFloat() 函数可解析一个字符串，并返回一个浮点数
+1. parseFloat() 函数可解析一个字符串，并返回一个浮点数
 
 ```javascript
   console.log(parseFloat('1.11'));  //1.11
   console.log(typeof parseFloat('1.11')); //number
 ```
 
-* window.scrollTo：可把内容滚动到指定的坐标
+2. window.scrollTo：可把内容滚动到指定的坐标
 
 ```javascript
 function scrollWindow(){
     window.scrollTo(100,500);
+}
+```
+
+3. ?? 判断：判断是否为null或者undefined
+
+```javascript
+// ??写法
+function(obj){
+    var a = obj ?? {}
+}
+// 原生写法
+function(obj){
+    var a;
+	if(obj === null || obj === undefined){
+ 		a = {}
+ 	} else {
+		a = obj;
+	}
 }
 ```
 
