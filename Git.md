@@ -206,6 +206,11 @@ git stash apply # 恢复之前的缓存工作目录
 git stash list
 # 移除stash
 git stash drop 'stash名字'
+# 删除第一个队列
+git stash drop stash@{0}
+git stash drop 0
+# 移除全部stash
+git stash clear
 # 查看指定stash的diff
 git stash show / git stash show -p # 查看全部diff
 ```
