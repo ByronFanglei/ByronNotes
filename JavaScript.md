@@ -271,7 +271,7 @@ console.log(arr) // ['tom','65','男',['jane','john','Mary']]
 ```javascript
     var arr = [1,2,3,3,4,5,6];
     for(let i of arr){ //使用的iterator接口
-      console.log(i);
+      console.log(i); // 数组单个元素
       console.log(typeof(i));
     }
 ```
@@ -553,6 +553,7 @@ function(obj){
 >afterend: 元素自身的后面
 
 * getBoundingClientRect()：获取该元素的基础属性
+
 ```javascript
 DOMRect {x: 8, y: -200, width: 200, height: 200, top: -200, …}
     bottom: 0
@@ -564,6 +565,13 @@ DOMRect {x: 8, y: -200, width: 200, height: 200, top: -200, …}
     x: 8
     y: -200
     __proto__: DOMRect
+```
+
+* document.compatMode：判断当前浏览器采用的渲染方式
+
+```javascript
+// 当document.compatMode等于BackCompat时，浏览器客户区宽度是document.body.clientWidth
+// 当document.compatMode等于CSS1Compat时，浏览器客户区宽度是document.documentElement.clientWidth
 ```
 
 ### 操作样式
@@ -2468,9 +2476,7 @@ s.setState('状态爆炸') // 被观察者修改状态
 
 ## 惰性函数
 1. 什么是惰性函数：惰性加载就是函数执行的分支只会在函数第一次调用的时候执行，在第一次调用的过程中，该函数被覆盖为另一个按照合适的方式执行的函数这样任何对原函数的调用就不用再经过执行的分支了
-2. 惰性函数解决什么问题：
-
-
+2. 惰性函数解决什么问题：当一个函数的功能是不明确的，而只有在执行的时候才能知道到底要选那个功能，这时候就可以使用惰性函数
 
 
 
