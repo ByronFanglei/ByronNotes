@@ -259,6 +259,34 @@ git push --force
 # 执行完毕后，查看远程仓库commit是否合并到一起
 ```
 
+## git 撤销命令
+
+### git add后怎样撤回
+* 场景：当add到暂存区后发现需要回退到原来节点
+
+```shell
+# 表示从暂存区将文件的状态修改成 unstage 状态。当然，也可以不指定确切的文件
+git restore --staged [file]
+# 表示将所有暂存区的js文件恢复状态
+git restore --staged *.js
+# 表示将当前目录所有暂存区文件恢复状态
+git restore --staged .
+
+--staged 参数就是表示仅仅恢复暂存区的
+```
+
+### git commit后怎样撤回
+* 场景：当commit到仓库区后发现需要回退到原来节点
+
+```shell
+# 该命名表示将版本回退到当前快照的前一个版本
+git restore -s HEAD~1 READEME.md
+# 改命令指定明确的 commit id ，回退到指定的快照中
+git restore -s 91410eb9  READEME.md
+# 该命令表示撤销 commit 至上一次 commit 的版本
+git reset --soft HEAD^
+```
+
 ### git push后怎样撤回
 * 场景：当push到远程分支后发现需要回退到原来节点
 
