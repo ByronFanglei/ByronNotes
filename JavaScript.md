@@ -1748,6 +1748,46 @@ let p = Promise.resolve()
 * 该技术的缺点
 * 如何解决这些缺点---引出下一个问题 
 
+#### Promise只获取最后一次接口数据
+* 背景：比如有多个button每个button点击后获取不同数据，然后连续且快速点击后，可能就会出现多次刷新ui页面的效果，所以可以再次封装promise后，得到一个只会获取最后一次数据的promise
+
+```javascript
+// 接收一个promise值
+makeCancelable = (promise) => {
+    let hasCanceled = false;
+    const wrappedPromise = new Promise((resolve, reject) => {
+      promise.then(
+        (val) => (hasCanceled ? reject(new Error({ isCanceled: true })) : resolve(val)),
+        (error) => (hasCanceled ? reject(new Error({ isCanceled: true })) : reject(error))
+      );
+    });
+    return {
+      promise: wrappedPromise,
+      cancel() {
+        hasCanceled = true;
+      },
+    };
+  };
+
+// 使用方法
+this.currentPromise = null;
+
+loadData = async () => {
+    if (this.currentPromise) {
+        this.currentPromise.cancel();
+    }
+    this.currentPromise = this.makeCancelable(/* 接收一个promise */）
+    this.currentPromise.promise
+        .then(value => {
+        /* 一般这里直接将loading设置为false... */
+        })
+        .catch(reason => {
+        /* 一般这里直接将loading设置为false... */
+        })
+}
+```
+
+
 ### async 函数(ES8)---Promise的语法糖
 * async 函数：async函数的返回值为promise对象，promise对象的结果由async函数执行的返回值决定，只能返回成功的promise对象，如果是失败的promise对象需要实用try...catch进行捕获，也就是说async需要配合try...catch进行实用
 * await 表达式：await表达式执行后产生微任务， await右侧的表达式一般为promise对象，但也可以是其他的值，如果表达式为promise对象，await返回值是promise成功的值,在此期间它会阻塞，延迟执行await语句后面的语句，如果表达式是其他值，直接将此值作为await的返回值，await是一个让出线程的标志。await后面的函数会先执行一遍，然后就会跳出整个async函数来执行后面js栈的代码

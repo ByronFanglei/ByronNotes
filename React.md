@@ -2002,6 +2002,12 @@ module.exports = function(app) {
     }
   }))
 }
+// 多说一句
+// 0.x.x版本的引用方式
+const proxy = require('http-proxy-middleware');
+
+// 1.0.0版本的引用方式
+const { createProxyMiddleware } = require('http-proxy-middleware');
 ```
 
 
@@ -2578,7 +2584,7 @@ constructor(props) {
 * TouchableHighlight: 给内部元素增加绑定事件之外，还负责给内部元素增加“点击态”。所谓的“点击态”，就是在用户在点击的时候，会产生一个短暂出现覆盖层，用来告诉用户这个区块被点击到了，快速点击后触发顺序onPressIn->onPress->onPressOut
 * TouchableNativeFeedback：只能用在安卓上，它可以针对点击在点击区域中显示不同的效果，快速点击后触发顺序onPressIn->onPressOut->onPress
 * TouchableOpacity：点击后添加透明度---推荐使用，快速点击后触发顺序onPressIn->onPressOut->onPress
-* TouchableWithoutFeedback：没有点击态，也就是点击无反应，但是会触发时间，点击后不知道自己有没有点击，快速点击后触发顺序onPressIn->onPressOut->onPress
+* TouchableWithoutFeedback：没有点击态，也就是点击无反应，但是会触发事件，点击后不知道自己有没有点击，快速点击后触发顺序onPressIn->onPressOut->onPress
 
 ```javascript
 // 基础事件

@@ -154,6 +154,9 @@ git push origin master
 # 两种回退区别
 reset是指将HEAD指针指到指定提交，历史记录中不会出现放弃的提交记录。
 revert是放弃指定提交的修改，但是会生成一次新的提交，需要填写提交注释，以前的历史记录都在。
+
+# 回退到最新远程状态
+git reset --hard origin/master
 ```
 
 

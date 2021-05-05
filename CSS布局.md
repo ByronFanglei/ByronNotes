@@ -126,7 +126,7 @@ display属性
   block：块级元素
   inline：内联元素（text-align有效）
   inline-block：行内块级元素（块级+内联）
-  table：设置当前元素为<table>元素
+  table：设置当前元素为`table`元素
   table-cell：设置当前元素为<td>元素（单元格）
 vertical-align属性：是为*文本内容*设置垂直方向对齐方式
   top：顶部对齐
