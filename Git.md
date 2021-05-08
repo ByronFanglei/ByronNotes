@@ -105,6 +105,7 @@ git branch -a
 git branch children
 # 创建子分支并切换到子分支
 git checkout -b children
+git switch -c children
 # 提交子分支
 git checkout children
 git commit -m '提交子分支'
@@ -116,8 +117,13 @@ git merge children
 
 # 删除分支
 git branch -d children
+# 强行删除分支
+git branch -D children
 # 仅在合并后导致冲突时才使用，git merge --abort将会抛弃合并过程并且尝试重建合并前的状态
 git merge --abort
+
+# 可以丢弃工作区的修改
+git checkout -- <file>
 ```
 
 #### git rebase
@@ -125,15 +131,17 @@ git merge --abort
 
 ``` shell
 # 创建子分支
-git branch children
-# 提交子分支
-git checkout children
-git commit 
+git switch -c children
+git commit -m 'message'
 # 提交主分支
-git checkout master
-git commit
-# 再次切换到 children 分支，rebase 到 master 上
+git switch master
+git commit -m 'message'
+# 再次切换到 children 分支，rebase 到 master 上，此时children就会合并master并且是一条直线
 git rebase master
+# 如果遇到冲突，解决冲突后
+git add .
+git rebase --continue
+# 等待出现 Successfully 即可完成rebase合并
 ```
 
 ### git版本回退
@@ -141,6 +149,9 @@ git rebase master
 # 查看问价历史版本
 git log
 git log --pretty=oneline
+
+# 查看历史命令
+git reflog
 
 # 第一种回退操作
 git reset --hard HEAD
@@ -161,7 +172,7 @@ git reset --hard origin/master
 
 
 ### HEAD
-* HEAD 是一个对当前检出记录的符号引用 —— 也就是指向你正在其基础上进行工作的提交记录，HEAD 总是指向当前分支上最近一次提交记录
+* HEAD 是一个对当前检出记录的符号引用 —— 也就是指向你正在其基础上进行工作的提交记录，HEAD 指向的就是当前版本
 
 #### 分离HEAD
 * 分离的 HEAD 就是让其指向了某个具体的提交记录而不是分支名
@@ -227,14 +238,15 @@ git stash show / git stash show -p # 查看全部diff
 # 压缩前6个commit
 git rebase -i HEAD~6
 # 压缩当前hash值的commit到指定hash值的commit
-git rebase -i hash
+git rebase -i 'Hash'
 # 执行后，进入vim，倒序排列，最下面的是最新的commit
+# 相当与重新拷贝了一份commit，然后你自己随便改这份commit，提交后，追加到之前最后的commit上，但是使用git log 后不会出现之前的commit，只会出现合并后的commit
 ```
 
 2. 合并commit
 
 ```shell
-# pick 的意识是要执行这个 commit
+# pick 的意思是要执行这个 commit
 # squash 的意识是这个 commit 会被合并到前一个 commit
 # 在vim中进行修改前缀，需要commit的为 pick(不变)，需要合并的修改为squash or s，修改完毕后 :wx or :x 退出vim
 # 这里有一种情况，就是 3 4 5需要合并到1上，但是2需要commit，这时，就可以把第二条复制放到最后，然后，3 4 5改为 s，然后保存，退出vim即可
@@ -286,7 +298,7 @@ git restore --staged .
 git restore -s HEAD~1 READEME.md
 # 改命令指定明确的 commit id ，回退到指定的快照中
 git restore -s 91410eb9  READEME.md
-# 该命令表示撤销 commit 至上一次 commit 的版本
+# 该命令表示撤销 commit 至少一次 commit 的版本
 git reset --soft HEAD^
 ```
 
@@ -309,8 +321,42 @@ done
 ```
 
 
+## git 常用情景
+### bug分支修改完bug并合并master后，dev分支同时也需要修改这个bug
+```shell
+# 创建bug-fix分支
+git switch -c bug-fix
+# ====修复bug===
+# 切换到master并合并bug-fix分支
+git switch master
+git merge bug-fix
+# 继续切换到dev分支，发现dev分支bug还存在
+git switch dev
+# 复制一个特定的提交到当前分支
+git cherry-pick bug提交的hash
+```
 
-### git命令速查表
+## git打标签
+* 打标签的目的可以让我们更好的找到对应的版本，而不用再去找对应的commit Hash值
+
+```shell
+# 默认标签是打在最新提交的commit上
+git tag v1.0
+# 查看所有tag
+git tag
+# 对指定commit 打标签
+git tag -a v0.1 -m '首次标签' bd3049d739a7305eaf9b7da5aab646a7a5cff966
+# 查看标签说明
+git show v0.1
+# 删除标签
+git tag -d v0.1
+# 推送标签到远程仓库
+git push origin v0.1
+# 一次性推送全部尚未推送到远程的本地标签
+git push origin --tags
+```
+
+## git命令速查表
 ![image-20210224151739968](https://img-blog.csdn.net/20180816164553616?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xvdmVxdWFucXVxbg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 
 
