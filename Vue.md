@@ -867,11 +867,11 @@ module.exports = {
   	host: 'localhost',
   	port: 8080,
     proxy: {
-      // 当访问/v2的时候代理到target地址中
-      '/v2/': {
+      // 当访问/api的时候代理到target地址中
+      '/api/': {
         // 设置代理地址  切记添加https://或http://
         target: 'https://api.douban.com',
-        changeOrigin: true，
+        changeOrigin: true,
         pathRewrite: {
         // 当访问开头为api时，将/api设置为空在进行访问
           '/api': ''
@@ -882,7 +882,7 @@ module.exports = {
 }
 // ajax请求数据
 mounted () {
-    var req = '/v2/movie/top250?apikey=0b2bdeda43b5688921839c8ecb20399b'
+    var req = '/api/movie/top250?apikey=0b2bdeda43b5688921839c8ecb20399b'
     axios.get(req).then((value) => {
       this.datalist = value.data.subjects
       console.log(value)
