@@ -84,8 +84,8 @@ interface Teacher extends Person {
 
 // 函数类型
 interface SayHi {
-  // 函数接收一个string类型的参数同时返回一个string类型
-  (word: string): string;
+  // 函数名称为init，接收string类型的html和string类型的pathfile 返回一个string类型的值
+  init: (html: string, pathfile: string) => string;
 }
 
 // 可索引类型，或者可以理解为数组
@@ -143,10 +143,11 @@ department.generateReports(); // 错误: 方法在声明的抽象类中不存在
 ```
 
 5. ts直接引用js会报错，需要安装对应的翻译文件也就是.d.ts为后缀的文件；
-  ts -> .d.ts 翻译文件 -> js
+    ts -> .d.ts 翻译文件 -> js
 
 
-
+## TypeScript语法
+1. 在使用tsc demo.ts时候是不会应用到tsconfig.json文件的，只有在使用tsc 时才会走tsconfig.json文件
 
 
 
