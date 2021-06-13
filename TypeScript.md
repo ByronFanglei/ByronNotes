@@ -83,6 +83,16 @@ interface Teacher extends Person {
 }
 
 // 函数类型
+
+interface SearchFunc {
+  (source: string, subString: string): boolean;
+}
+let mySearch: SearchFunc;
+mySearch = function(source: string, subString: string) {
+  let result = source.search(subString);
+  return result > -1;
+}
+
 interface SayHi {
   // 函数名称为init，接收string类型的html和string类型的pathfile 返回一个string类型的值
   init: (html: string, pathfile: string) => string;
@@ -148,6 +158,288 @@ department.generateReports(); // 错误: 方法在声明的抽象类中不存在
 
 ## TypeScript语法
 1. 在使用tsc demo.ts时候是不会应用到tsconfig.json文件的，只有在使用tsc 时才会走tsconfig.json文件
+
+2. 类型保护
+```typescript
+interface Brid {
+  fly: string;
+  say: () => {};
+}
+interface Dog {
+  fly: string;
+  sayHi: () => {};
+}
+// 类型断言方式进行类型保护
+function Animate(animate: Brid | Dog) { // 联合类型，可以用Brid可以用Dog
+  if (animate.fly) {
+    (animate as Brid).say();
+  } else {
+    (animate as Dog).sayHi();
+  }
+}
+// in 语法做类型保护
+function Animat(animate: Brid | Dog) { // 联合类型
+  if ('say' in animate) {
+    animate.say();
+  } else {
+    animate.sayHi();
+  }
+}
+
+// typeof 语法做类型保护
+function add(one: string | number, two: string | number) { // 联合类型
+  if (typeof one === 'string' || typeof two === 'string') {
+    return `${one}+${two}`;
+  }
+  return one + two;
+}
+
+// instanceof 语法做类型保护
+class NumberObj {
+  // @ts-ignore
+  count: number;
+}
+
+function addSecond(frist: Object | NumberObj, second: Object | NumberObj) { // 联合类型
+  if (frist instanceof NumberObj && second instanceof NumberObj) {
+    return frist.count + second.count;
+  }
+  return 0;
+}
+```
+
+3. 枚举类型
+
+```typescript
+enum Status {
+  OFFLINE,
+  ONLINE = 11, // 可以设置初始值，下一个会对应加一
+  LINELINE,
+}
+
+console.log(Status[0], Status[11]); // OFFLINE ONLINE
+
+function GetReuslt(status: number) {
+  if (status === Status.OFFLINE) {
+    return 'offline';
+  } else if (status === Status.ONLINE) {
+    return 'online';
+  } else if (status === Status.LINELINE) {
+    return 'lineline';
+  }
+  return 'error';
+}
+
+console.log(GetReuslt(0)); // OFFLINE
+```
+
+4. 函数泛型：在使用函数的时候在进行类型的定义
+
+```typescript
+// 函数泛型 generic
+function join<T>(first: T, second: T) {
+  return `${first}${second}`;
+}
+join<number>(1, 1);
+
+function map<T>(params: T[]) {
+  return `${params}`;
+}
+map<string>(['123']);
+
+function map1<T>(params: Array<T>) {
+  return `${params}`;
+}
+map1<string>(['123']);
+// 使用多个泛型
+function join1<T, P>(first: T, second: P) {
+  return `${first}${second}`;
+}
+join1<string, number>('1', 1);
+
+// 如何使用泛型作为一个具体的类型注解
+  // 第一种写法
+const func: <T>(params: T) => T = <T>(params: T) => {
+  return params;
+};
+  // 第二种写法
+const hello = <T>(params: T) => {
+  return params;
+};
+const func1: <T>(params: T) => T = hello;
+```
+
+5. 类泛型
+
+```typescript
+// 类泛型
+// 基础类型
+class DataManager<T> {
+  constructor(private data: T[]) {}
+  getItem(index: number): T {
+    return this.data[index];
+  }
+}
+const data = new DataManager<number>([1]);
+data.getItem(0);
+
+// 泛型继承
+interface Item {
+  name: string;
+}
+class DataManager1<T extends Item> {
+  constructor(private data: T[]) {}
+  getItem(index: number): string {
+    return this.data[index].name;
+  }
+}
+const data1 = new DataManager<Item>([
+  {
+    name: 'byron',
+  },
+]);
+
+// 泛型指定联合继承
+interface Test {
+  name: string;
+}
+class DataManager2<T extends number | string> {
+  constructor(private data: T[]) {}
+  getItem(index: number): T {
+    return this.data[index];
+  }
+}
+const data2 = new DataManager<number>([1]);
+
+
+// keyof 用法：简单来说可以遍历对象的类型，可以做到推断出正确的返回类型
+interface Person {
+  name: string;
+  age: number;
+  gender: string;
+}
+
+class Teacher {
+  constructor(private info: Person) {}
+  getInfo<T extends keyof Person>(key: T): Person[T] {
+    return this.info[key];
+  }
+}
+const t = new Teacher({
+  name: 'byron',
+  age: 23,
+  gender: 'male',
+});
+const nn = t.getInfo('name');
+console.log(nn); // byron
+```
+
+6. 命名空间namespace
+
+```typescript
+// components.ts
+namespace Components {
+  export namespace SubComponents {
+    export class Test {}
+  }
+
+  export interface User {
+    name: string;
+  }
+
+  export class Header {
+    constructor() {
+      const H = document.createElement('div');
+      H.innerHTML = 'Header';
+      document.body.appendChild(H);
+    }
+  }
+
+  export class Content {
+    constructor() {
+      const C = document.createElement('div');
+      C.innerHTML = 'Content';
+      document.body.appendChild(C);
+    }
+  }
+
+  export class Footer {
+    constructor() {
+      const F = document.createElement('div');
+      F.innerHTML = 'Footer';
+      document.body.appendChild(F);
+    }
+  }
+}
+
+
+// home.ts
+// namespace：把一组相关变量封装到一起去，对外提供统一的封装接口
+// 命名之间相互引用
+///<reference path='./components.ts' />
+namespace Home {
+  export class Page {
+    constructor() {
+      new Components.Header();
+      new Components.Content();
+      new Components.Footer();
+    }
+  }
+}
+
+```
+
+7. parcel打包工具的使用：parcel类似于webpack打包工具但是不需要自己进行配置，可以自动识别加载的文件进行编译。
+8. 如何定义全局变量或函数
+
+```typescript
+// 参考用法
+$(function () {
+  console.log('123');
+  $('body').html('<div>111111</div>');
+  new $.fn.init();
+});
+
+// 定义全局变量  以jq为例子  关键字：declare 声明
+// declare var $: (praam: () => void) => void;
+
+interface jQueryHtml {
+  html: (html: string) => jQueryHtml;
+}
+// 定义全局函数  重载
+declare function $(readyFunc: () => void): void;
+declare function $(selector: string): jQueryHtml;
+
+// 使用interface方法进行函数重载
+// interface jQuery {
+//   (readyFunc: () => void): void;
+//   (selector: string): jQueryHtml;
+// }
+// declare var $: jQuery;
+
+// 如何对对象进行类型定义，以及对类进行类型定义，以及命名空间的嵌套
+declare namespace $ {
+  namespace fn {
+    class init {}
+  }
+}
+
+// 模块化写法
+declare module 'jquery' {
+  interface jQueryHtml {
+    html: (html: string) => jQueryHtml;
+  }
+  function $(readyFunc: () => void): void;
+  function $(selector: string): jQueryHtml;
+  namespace $ {
+    namespace fn {
+      class init {}
+    }
+  }
+  export default $;
+}
+
+```
 
 
 
