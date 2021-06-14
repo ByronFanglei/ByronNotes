@@ -441,11 +441,165 @@ declare module 'jquery' {
 
 ```
 
+9. 类的装饰器
+```typescript
+// 类的装饰器
+// 装饰器本身就是一个函数
+// 类装饰器接收的参数是构造函数
+// 装饰器通过 @ 符号来使用，当类定义后调用装饰
+// 可以一次调用多个装饰器，顺序从下往上
+function TestDecorator1(flag: boolean) {
+  if (flag) {
+    return function Decorator(constructor: any) {
+      constructor.prototype.getName = () => {
+        console.log('byron');
+      };
+    };
+  } else {
+    return function Decorator(constructor: any) {};
+  }
+}
+@TestDecorator1(false)
+class Test {}
+const test = new Test();
+(test as any).getName();
 
 
+// 进阶装饰器
+function Decorator() {
+  // 设置泛型，通过泛型进行构造实例化，
+  return function <T extends new (...arg: any[]) => any>(constructor: T) {
+    return class extends constructor {
+      name = 'ma';
+      getName() {
+        return this.name;
+      }
+    };
+  };
+}
 
+const Test = Decorator()(
+  class {
+    name: string;
+    constructor(name: string) {
+      this.name = name;
+    }
+  }
+);
+const t = new Test('byron');
+console.log(t, t.getName());
+```
 
+10. 方法装饰器
+```typescript
+// 方法装饰器
+// 普通方法，target对应的是类的 prototype
+// 静态方法，target对应的是类的构造器
 
+function getNameDecorator(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) {
+  console.log(
+    target,
+    `
+    ${propertyKey}
+  `,
+    descriptor
+  );
+  // Test { getName: [Function] }
+  // getName
+  // { 这里可以想一想object之前学到的方法，都是类似的
+  //   value: [Function],  当前的内容，现在也就是getName这个方法
+  //   writable: true,   是否可以重写
+  //   enumerable: true,  是否可以枚举
+  //   configurable: true 是否可以删除
+  // }
+}
+class Test {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  @getNameDecorator
+  getName() {
+    return this.name;
+  }
+}
+const t = new Test('byron');
+console.log(t.getName()); // byron
+```
 
+11. 访问器装饰器
+```typescript
+// 访问器装饰器
+// TypeScript不允许同时装饰一个成员的get和set访问器。取而代之的是，一个成员的所有装饰的必须应用在文档顺序的第一个访问器上。这是因为，在装饰器应用于一个属性描述符时，它联合了get和set访问器，而不是分开声明的
+function setDecorator(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) {
+  // descriptor.writable = false;
+}
+class Test {
+  private _name: string;
+  constructor(name: string) {
+    this._name = name;
+  }
+  get name() {
+    return this._name;
+  }
+  @setDecorator
+  set name(realname: string) {
+    this._name = realname;
+  }
+}
+const t = new Test('byron');
+t.name = 'lee';
+console.log(t.name);
+```
+
+12. 属性装饰器
+```typescript
+// 属性装饰器
+function attributeDes(target: any, propertyKey: string): any {
+  console.log(target, propertyKey); // Test {} name
+  // 修改的并不是实例上的name， 而是原型上的name
+  target[propertyKey] = 'maa';
+  // 虽然属性装饰器上没有descriptor，但是我们可以自己搞，这样写完就不能对值进行修改了
+  const descriptor: PropertyDescriptor = {
+    writable: false,
+  };
+  return descriptor;
+}
+class Test {
+  @attributeDes
+  name = 'byron';
+}
+
+const t = new Test();
+console.log(t.name); // byron
+console.log((t as any).__proto__.name); // maa
+t.name = '123'; // TypeError: Cannot assign to read only property 'name' of object
+
+```
+
+13. 参数装饰器
+```typescript
+// 参数装饰器
+// 原型 方法名 参数下标
+function ageDec(target: any, propertyKey: string, parameterIndex: number) {
+  console.log(target, propertyKey, parameterIndex);
+  // Test { getInfo: [Function] } getInfo 1
+}
+class Test {
+  getInfo(name: string, @ageDec age: number) {
+    console.log(name, age);
+  }
+}
+const t = new Test();
+t.getInfo('byron', 23);
+```
 
 
