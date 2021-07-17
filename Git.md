@@ -106,6 +106,8 @@ git branch children
 # 创建子分支并切换到子分支
 git checkout -b children
 git switch -c children
+# 本地分支同步到远程分支
+git push origin children:children
 # 提交子分支
 git checkout children
 git commit -m '提交子分支'
@@ -137,6 +139,7 @@ git commit -m 'message'
 git switch master
 git commit -m 'message'
 # 再次切换到 children 分支，rebase 到 master 上，此时children就会合并master并且是一条直线
+git switch children
 git rebase master
 # 如果遇到冲突，解决冲突后
 git add .
@@ -227,6 +230,9 @@ git stash drop 0
 git stash clear
 # 查看指定stash的diff
 git stash show / git stash show -p # 查看全部diff
+
+# 将新页面也存储栈中
+git stash -u 
 ```
 
 ### 合并多个commit
@@ -306,15 +312,15 @@ git reset --soft HEAD^
 * 场景：当push到远程分支后发现需要回退到原来节点
 
 ```shell
-// 1、找到需要回退的版本号
+# 1、找到需要回退的版本号
 git log
 
-// 2、回退到指定版本号的版本
+# 2、回退到指定版本号的版本
 git reset --hard <版本号>
-// 注意使用 --hard 参数会抛弃当前工作区的修改
-// 使用 --soft 参数的话会回退到之前的版本，但是保留当前工作区的修改，可以重新提交
+# 注意使用 --hard 参数会抛弃当前工作区的修改
+# 使用 --soft 参数的话会回退到之前的版本，但是保留当前工作区的修改，可以重新提交
 
-// 3、覆盖掉远端的版本，别忘记加 --force
+# 3、覆盖掉远端的版本，别忘记加 --force
 git push origin <分支名> --force
 
 done
@@ -358,7 +364,6 @@ git push origin --tags
 
 ## git命令速查表
 ![image-20210224151739968](https://img-blog.csdn.net/20180816164553616?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xvdmVxdWFucXVxbg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
-
 
 
 
