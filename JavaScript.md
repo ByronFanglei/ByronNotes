@@ -517,6 +517,23 @@ function(obj){
 
 4. encodeURIComponent()函数：把字符串作为 URI 组件进行编码，该方法不会对 ASCII 字母和数字进行编码，也不会对这些 ASCII 标点符号进行编码： - _ . ! ~ * ' ( ) ； 哪里会用到：比如文件名里面有&或其他特殊字符打不开，就需要进行转义一下再打开，但是如果要获取原来文件名就需要使用decodeURIComponent进行转义为原始文件名
 
+5. Number
+
+```javascript
+// 一般浏览器存储的最大值
+Number.MAX_VALUE
+// 1.7976931348623157e+308
+
+// 一般浏览器存储的最小值
+Number.MIN_VALUE
+// 5e-324
+
+// 可以使用isFinite来判断最大与最小值之间
+isFinite(Number.MAX_VALUE)
+// true
+isFinite(Number.MAX_VALUE + Number.MAX_VALUE)
+// false
+
 ## DOM 文档对象模型
 ### 节点部分
 * getElementsByTagName()：通过标签名获取一组元素节点对象
@@ -1019,7 +1036,7 @@ dog.eat()
 * const属性包含let属性
 * const定义为常量
 * 声明const必须有初始值
-* 常量赋值后，地址值不能修改
+* 常量赋值后是不可以修改的，如果引用的是一个对象，那么可以这个对象内部的属性并不违反const的限制
 >基本数据类型是不能通过重新赋值来改变，并且不能重新声明
 >复杂数据类型可以修改值但不能修改地址
 

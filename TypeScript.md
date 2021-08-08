@@ -1,13 +1,26 @@
 # TypeScript
 1. JavaScript的超集，什么是超集，比如ES6就是ES5的超集
 2. ts相对于js的优势：静态类型可以在编写代码发现错误，可以有更友好的提示
+3. ts工具类方法
+
+```typescript
+// 初始化typescript 生成tsconfig.json文件，可以修改ts的默认配置
+tsc --init
+// 将ts编译为js
+tsc index.ts
+// 可以直接运行ts文件
+ts-node index.ts
+```
 
 ## TypeScript基础
-1. 静态类型：什么意思，意思就是说当一个变量初始话某个类型的值后，之后就不可以在接收其他类型的值，可以接收同类型的不同值
+### 静态类型
+概念：就是说当一个变量初始话某个类型的值后，之后就不可以在接收其他类型的值，可以接收同类型的不同值
 
 基础类型与对象类型
 ```typescript
 // 基础类型 null undefined symbol boolean void number string
+// void: 返回值为空
+// never: 没有办法完全执行完
 const count: number = 1;
 const teacher: string = 'byron';
 let a: number | string = 1;
@@ -25,13 +38,19 @@ const number: number[] = [1, 2, 3];
 class Person {}
 const del: Person = new Person();
 // 函数
+// 这里不用给函数注解是因为会自己推断出来
 const getTotals = (str: string) => 123;
-const getTotal: (str: string) => number = () => 123;
+// 这里给函数注解是因为写法问题
+const getTotal: (str: string) => number = (str) => 123;
 // never: 这个函数永远不可能执行完
 function errorEmitter(): never {
   throw new Error()
   // 或者
   while(true) {}
+}
+// 解构
+function add({first, second}: {first: number, second: number}):number {
+  return first + second
 }
 
 //  类型注解 type annotation 我们告诉TS变量是什么类型
@@ -40,7 +59,7 @@ function errorEmitter(): never {
 //  如果TS无法分析变量类型，我们需要使用类型注解
 ```
 
-2. 数组与元组
+### 数组与元组
 ```typescript
 // 数组
 const arr: (number | string)[] = [1, 2, '3'];
@@ -61,8 +80,10 @@ const teacherList: [string, string, number][] = [
 ];
 ```
 
-3. interface接口，只是作为开发过程中校验使用，并不会编译为js
+### interface接口
+只是作为开发过程中校验使用，并不会编译为js
 ```typescript
+// interface与type的区别：interface只可以指定对象或者函数，type可以指定一个基础类型，能用interface就不用type
 // 接口
 interface Person {
   // 只读key
@@ -83,8 +104,8 @@ interface Teacher extends Person {
 }
 
 // 函数类型
-
 interface SearchFunc {
+  // 接收参数                           返回类型
   (source: string, subString: string): boolean;
 }
 let mySearch: SearchFunc;
@@ -98,12 +119,12 @@ interface SayHi {
   init: (html: string, pathfile: string) => string;
 }
 
-// 可索引类型，或者可以理解为数组
+// 用接口表示数组 可索引类型，一般不会这么做
 interface StringArray {
   [index: number]: String;
 }
 
-// 想要继承接口需要使用implements语法
+// 想要类继承接口需要使用implements语法
 class User implements Teacher {
   rname = '1';
   name = '1';
@@ -116,8 +137,51 @@ class User implements Teacher {
 }
 ```
 
-4. 抽象类，抽象类一般不会被实例化，但是不同于接口，抽象类可以包含成员的实现细节，abstract用于定义抽象类和在抽象类内部定义抽象方法
+### 抽象类
+一般来说当有多个类且具有共性时，我们需要做一个抽象类，抽象类只能继承不能被实例化，但是不同于接口，抽象类可以包含成员的实现细节，abstract用于定义抽象类和在抽象类内部定义抽象方法
 ```typescript
+// 类 public private protected 访问类型
+// public 允许我在类的内外被调用
+// private 允许在类内被使用
+// protected 允许在类内及继承的子类中使用
+// constructor在new对象的时候就会触发
+
+// get set 使用。可以对外保护私有属性
+class Person {
+  constructor(private _name: string) {}
+  get name() {
+    return this._name + ' qqq'
+  }
+  set name(name) {
+    console.log('set', this._name); // byron
+    this._name = name.split(' ')[0]
+  }
+}
+
+const p = new Person('byron')
+console.log(p.name); // byron qqq
+p.name = 'byron qqq'
+console.log(p.name); // byron qqq
+
+// 单例模式 一个类只可以实例化一次
+class Person {
+  // 创建一个私有静态属性instance，类型为Person
+  private static instance: Person
+  private constructor(public name: string) {
+    console.log(name ,'实例化了一次')
+  }
+  static getPerson () {
+    if (!this.instance) {
+      this.instance = new Person('hello')
+    }
+    return this.instance
+  }
+}
+
+const p1 = Person.getPerson();
+const p2 = Person.getPerson();
+console.log(p1 === p2); // true
+
 // 定义抽象类
 abstract class Department {
   constructor(public name: string) {}
@@ -152,14 +216,27 @@ department.generateReports(); // 错误: 方法在声明的抽象类中不存在
 
 ```
 
-5. ts直接引用js会报错，需要安装对应的翻译文件也就是.d.ts为后缀的文件；
+### Ts安装问题
+1. ts直接引用js会报错，需要安装对应的翻译文件也就是.d.ts为后缀的文件；
     ts -> .d.ts 翻译文件 -> js
+2. 在使用tsc demo.ts时候是不会应用到tsconfig.json文件的，只有在使用tsc 时才会走tsconfig.json文件
+
+### 爬虫步骤
+1. 首先将爬取页面的html先获取到
+
+```shell
+# 安装必要插件
+# 安装superagent，可以在node环境下发送ajax
+npm install superagent
+# 安装cheerio，可以使用类似jq的语法获取标签的内容
+npm install cheerio
+
+
+```
 
 
 ## TypeScript语法
-1. 在使用tsc demo.ts时候是不会应用到tsconfig.json文件的，只有在使用tsc 时才会走tsconfig.json文件
-
-2. 类型保护
+### 类型保护
 ```typescript
 interface Brid {
   fly: string;
@@ -208,7 +285,7 @@ function addSecond(frist: Object | NumberObj, second: Object | NumberObj) { // �
 }
 ```
 
-3. 枚举类型
+### 枚举类型
 
 ```typescript
 enum Status {
@@ -233,7 +310,8 @@ function GetReuslt(status: number) {
 console.log(GetReuslt(0)); // OFFLINE
 ```
 
-4. 函数泛型：在使用函数的时候在进行类型的定义
+### 函数泛型
+在使用函数的时候在进行类型的定义
 
 ```typescript
 // 函数泛型 generic
@@ -269,7 +347,7 @@ const hello = <T>(params: T) => {
 const func1: <T>(params: T) => T = hello;
 ```
 
-5. 类泛型
+### 类泛型
 
 ```typescript
 // 类泛型
@@ -334,7 +412,7 @@ const nn = t.getInfo('name');
 console.log(nn); // byron
 ```
 
-6. 命名空间namespace
+### 命名空间namespace
 
 ```typescript
 // components.ts
@@ -389,8 +467,10 @@ namespace Home {
 
 ```
 
-7. parcel打包工具的使用：parcel类似于webpack打包工具但是不需要自己进行配置，可以自动识别加载的文件进行编译。
-8. 如何定义全局变量或函数
+### parcel打包工具
+1. parcel打包工具的使用：parcel类似于webpack打包工具但是不需要自己进行配置，可以自动识别加载的文件进行编译。
+
+### 如何定义全局变量或函数
 
 ```typescript
 // 参考用法
@@ -441,7 +521,7 @@ declare module 'jquery' {
 
 ```
 
-9. 类的装饰器
+### 类的装饰器
 ```typescript
 // 类的装饰器
 // 装饰器本身就是一个函数
@@ -490,7 +570,7 @@ const t = new Test('byron');
 console.log(t, t.getName());
 ```
 
-10. 方法装饰器
+### 方法装饰器
 ```typescript
 // 方法装饰器
 // 普通方法，target对应的是类的 prototype
@@ -531,7 +611,7 @@ const t = new Test('byron');
 console.log(t.getName()); // byron
 ```
 
-11. 访问器装饰器
+### 访问器装饰器
 ```typescript
 // 访问器装饰器
 // TypeScript不允许同时装饰一个成员的get和set访问器。取而代之的是，一个成员的所有装饰的必须应用在文档顺序的第一个访问器上。这是因为，在装饰器应用于一个属性描述符时，它联合了get和set访问器，而不是分开声明的
@@ -560,7 +640,7 @@ t.name = 'lee';
 console.log(t.name);
 ```
 
-12. 属性装饰器
+### 属性装饰器
 ```typescript
 // 属性装饰器
 function attributeDes(target: any, propertyKey: string): any {
@@ -585,7 +665,7 @@ t.name = '123'; // TypeError: Cannot assign to read only property 'name' of obje
 
 ```
 
-13. 参数装饰器
+### 参数装饰器
 ```typescript
 // 参数装饰器
 // 原型 方法名 参数下标
@@ -601,5 +681,4 @@ class Test {
 const t = new Test();
 t.getInfo('byron', 23);
 ```
-
 
