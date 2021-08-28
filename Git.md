@@ -362,6 +362,14 @@ git push origin v0.1
 git push origin --tags
 ```
 
+## 如何优雅的修改文件名称
+
+```shell
+# git mv 命令用于移动或重命名一个文件、目录或软连接。
+git mv [file] [newfile]
+# ...git 提交操作， 别忘记修改引用文件的名称
+```
+
 ## git命令速查表
 ![image-20210224151739968](https://img-blog.csdn.net/20180816164553616?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xvdmVxdWFucXVxbg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 
