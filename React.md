@@ -1462,7 +1462,7 @@ export default EffectDemo
 ```
 
 ```javascript
-// useRffect模拟componentWillUnmount
+// useEffect模拟componentWillUnmount
 import React, { useState ,useEffect } from 'react'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
@@ -2802,3 +2802,4 @@ export default class HomePage extends Component {
   }
 }
 ```
+

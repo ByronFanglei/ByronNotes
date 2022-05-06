@@ -17,7 +17,9 @@ ts-node index.ts
 概念：就是说当一个变量初始话某个类型的值后，之后就不可以在接收其他类型的值，可以接收同类型的不同值
 
 基础类型与对象类型
+
 ```typescript
+// 如果变量声明和赋值是同时进行的，那么TS可以自定对变量进行类型检测
 // 基础类型 null undefined symbol boolean void number string
 // void: 返回值为空
 // never: 没有办法完全执行完
@@ -59,6 +61,29 @@ function add({first, second}: {first: number, second: number}):number {
 //  如果TS无法分析变量类型，我们需要使用类型注解
 ```
 
+|  类型  | 描述 | 例子 |
+|  :--:  | :-:  | :--:  |
+| number | 任意数字 | 1，-33，2.5 |
+| string | 任意字符串 | “hello” |
+| boolean | 布尔值true或false | true，false |
+| 字面量 | 限制变量的值就是该字面量的值 | 其本身 |
+| any | 任意类型 | * |
+| unknown | 类型安全的any，不能直接复制给其他变量 | * |
+| void | 没有值或undefined | 空值（undefined） |
+| never | 不能是任何值 | 没有值 |
+| object | 任意的js对象 | {name: 'byron'} |
+| array | 任意js数组 | [1,2,3] |
+| tuple | 元素，固定长度数组 | [4,5] |
+| Enum | 枚举 | enum{A,B} |
+
+
+类型断言
+
+```typescript
+s = e as string;
+s = <string>e;
+```
+
 ### 数组与元组
 ```typescript
 // 数组
@@ -82,6 +107,9 @@ const teacherList: [string, string, number][] = [
 
 ### interface接口
 只是作为开发过程中校验使用，并不会编译为js
+
+接口与类型(type)：接口可以重复声明，类型不可以
+
 ```typescript
 // interface与type的区别：interface只可以指定对象或者函数，type可以指定一个基础类型，能用interface就不用type
 // 接口
@@ -93,7 +121,7 @@ interface Person {
   // 可以选择有或无
   age?: number;
   // 可以有一个字符串的key，value为任意值
-  [proName: string]: any;
+  [propName: string]: any;
   //  设置一个返回值为string的函数
   say(): string;
 }
@@ -138,7 +166,7 @@ class User implements Teacher {
 ```
 
 ### 抽象类
-一般来说当有多个类且具有共性时，我们需要做一个抽象类，抽象类只能继承不能被实例化，但是不同于接口，抽象类可以包含成员的实现细节，abstract用于定义抽象类和在抽象类内部定义抽象方法
+一般来说当有多个类且具有共性时，我们需要做一个抽象类，抽象类只能继承不能被实例化，但是不同于接口，抽象类可以包含成员的实现细节，abstract用于定义抽象类和在抽象类内部定义抽象方法，抽象类只能进行继承不能直接实例化 
 ```typescript
 // 类 public private protected 访问类型
 // public 允许我在类的内外被调用
@@ -232,6 +260,12 @@ npm install superagent
 npm install cheerio
 # 安装concurrently 可以并行运行多个命令
 npm install concurrently
+# package.json
+"scripts": {
+    "dev:build": "tsc -w",
+    "dev:start": "nodemon node ./build/index.js",
+    "dev": "tsc && concurrently npm:dev:*"
+  },
 ```
 
 2. 解析获取html
@@ -253,33 +287,38 @@ npm install concurrently
   },
 ```
 
+5. tsconfig 文件
+
 ```json
 {
-  // 需要编译的内容
+  // 需要编译的内容 默认 ["**/*"]，一个*是任意文件，两个*是任意目录
   "include": ["./index.ts"],
   // 不编译的内容
   "exclude": ["./demo.ts"],
   // 需要编译的文件
-  "files": ["core.ts", "sys.ts", "types.ts",],
+  "files": [" core.ts", "sys.ts", "types.ts",],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 
     /* Basic Options */
     // 增量编译，只编译每次新增的内容
     "incremental": true,                         /* Enable incremental compilation */
+    // 编译后js的版本
     "target": "es5",                                /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', 'ES2021', or 'ESNEXT'. */
+    // 指定使用的模块化规范
     "module": "commonjs",                           /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
+    // 用来指定项目中使用的库
     // "lib": [],                                   /* Specify library files to be included in the compilation. */
     // 是否编译js文件
     "allowJs": true,                             /* Allow javascript files to be compiled. */
-    // js语法检测
+    // 检查js是否符合js规范
     "checkJs": true,                             /* Report errors in .js files. */
     // "jsx": "preserve",                           /* Specify JSX code generation: 'preserve', 'react-native', 'react', 'react-jsx' or 'react-jsxdev'. */
     // "declaration": true,                         /* Generates corresponding '.d.ts' file. */
     // "declarationMap": true,                      /* Generates a sourcemap for each corresponding '.d.ts' file. */
     // 生成sourceMap
     "sourceMap": true,                           /* Generates corresponding '.map' file. */
-    // 所有输出的文件放到一个文件里
+    // 所有全局的代码会合并到一个文件中,module必须为'amd' 或者 'system'
     "outFile": "./build/page.js",                             /* Concatenate and emit output to single file. */
     // 指定编译后存入的文件夹
     "outDir": "./build",                              /* Redirect output structure to the directory. */
@@ -289,21 +328,27 @@ npm install concurrently
     // "tsBuildInfoFile": "./",                     /* Specify file to store incremental compilation information */
     // 移除注释
     "removeComments": true,                      /* Do not emit comments to output. */
+    // 不生成编译后的文件
     // "noEmit": true,                              /* Do not emit outputs. */
+    // 当有错误的时候不生成编译文件
+    "noEmitOnError": true,
     // "importHelpers": true,                       /* Import emit helpers from 'tslib'. */
     // "downlevelIteration": true,                  /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */
     // "isolatedModules": true,                     /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
 
     /* Strict Type-Checking Options */
+    // 所有严格检查的总开关，一般建议设置为true，保证代码的质量
     "strict": true,                                 /* Enable all strict type-checking options. */
-    // 如果一直值是any 那么需要指定
+    // 不允许隐式的any
     "noImplicitAny": true,                       /* Raise error on expressions and declarations with an implied 'any' type. */
     // 强制检查值是否为null
     "strictNullChecks": true,                    /* Enable strict null checks. */
     // "strictFunctionTypes": true,                 /* Enable strict checking of function types. */
     // "strictBindCallApply": true,                 /* Enable strict 'bind', 'call', and 'apply' methods on functions. */
     // "strictPropertyInitialization": true,        /* Enable strict checking of property initialization in classes. */
+    // 不允许不明确类型的this
     // "noImplicitThis": true,                      /* Raise error on 'this' expressions with an implied 'any' type. */
+    // 用来设置编译后的文件是否使用严格模式，
     // "alwaysStrict": true,                        /* Parse in strict mode and emit "use strict" for each source file. */
 
     /* Additional Checks */
@@ -426,7 +471,7 @@ console.log(GetReuslt(0)); // OFFLINE
 ```
 
 ### 函数泛型
-泛指的类型，在使用函数的时候再进行类型的定义
+在定义函数或者类的时候，如果类型不明确的话就可以使用泛型 
 
 ```typescript
 // 函数泛型 generic
@@ -463,6 +508,8 @@ const func1: <T>(params: T) => T = hello;
 ```
 
 ### 类泛型
+
+在定义函数或者类的时候，如果类型不明确的话就可以使用泛型 
 
 ```typescript
 // 类泛型
@@ -801,4 +848,5 @@ class Test {
 const t = new Test();
 t.getInfo('byron', 23);
 ```
+
 
