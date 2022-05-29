@@ -261,38 +261,22 @@ list：
 
 ## 函数部分
 
-1. 常用函数
+1. [常用函数](https://docs.python.org/3/library/functions.html)
 
 ```python
 # abs 绝对值
-abs(100)
-100
-abs(-20)
-20
-abs(12.34)
-12.34
+print(abs(100)) # 100
+print(abs(-20)) # 20
+print(abs(12.34)) # 12.34
 
 # 最大最小
-max(2, 3, 1, -5)
-3
-min(2, 3, 1, -5)
--5
+print(max(2, 3, 1, -5)) # 3
+print(min(2, 3, 1, -5)) # -5
+
 
 # 数据类型转换
-int('123')
-123
-int(12.34)
-12
-float('12.34')
-12.34
-str(1.23)
-'1.23'
-str(100)
-'100'
-bool(1)
-True
-bool('')
-False
+print(int(1), int('1'), int(True), float('12.34'), str(1.23), str(100), bool(1), bool(''))
+# 1 1 1 12.34 1.23 100 True False
 ```
 
 
@@ -306,9 +290,24 @@ def my_abs(x):
     else:
         return -x
         
-# 空函数
+# 空函数， pass做占位符
 def nop():
     pass
+
+# 返回多个参数
+import math
+
+def move(x, y, step, angle=0):
+    nx = x + step * math.cos(angle)
+    ny = y - step * math.sin(angle)
+    return nx, ny
+
+r = move(100, 100, 60, math.pi / 6)
+print(r) # (151.96152422706632, 70.0), 返回的是一个 tuple
+
+# 判断当前参数类型
+print(isinstance(1, int)) # True
+print(isinstance(1, (int, float))) # True
 
 ```
 
