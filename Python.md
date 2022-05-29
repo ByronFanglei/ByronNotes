@@ -80,6 +80,12 @@ name = input()
 # 输出
 print(name)
 
+```
+
+
+2. 字符串编码
+
+```python
 print(r'/]\\dasd\fdsf\n/n')  # r'' print 使用 r'' 内的字符串不会自动转义
 print(r'''hello,\n
 world''')  # ''' ... ''' 语法可以展示多行，也可以跟 r'' 一起用
@@ -104,24 +110,33 @@ b'\xe4\xb8\xad\xe6\x96\x87'.decode('utf-8')
 b'\xe4\xb8\xad\xff'.decode('utf-8', errors='ignore') # 如果要忽略错误，添加errors='ignore'
 '中'
 
-# 格式化
-'Hello, %s' % 'world'
-'Hello, world'
+# 计算str包含多少个字符，可以用len()函数，len()函数计算的是str的字符数，如果换成bytes，len()函数就计算字节数
+len('ABC') # 3
+len(b'ABC') # 3
+len('中文') # 2
+len(b'\xe4\xb8\xad\xe6\x96\x87') # 6
 
-'Hi, %s, you have $%d.' % ('Michael', 1000000)
-'Hi, Michael, you have $1000000.'
+# tip：由于Python源代码也是一个文本文件，所以，当你的源代码中包含中文的时候，在保存源代码时，就需要务必指定保存为UTF-8编码
 
-'Hello, {0}, 成绩提升了 {1:.1f}%'.format('小明', 17.125)
-'Hello, 小明, 成绩提升了 17.1%'
+# 格式化，在字符串内部，%s表示用字符串替换，%d表示用整数替换，%f表示用浮点数，%x表示用十六进制，有几个%?占位符，后面就跟几个变量或者值，顺序要对应好。如果只有一个%?，括号可以省略
+print('Hello, %s' % 'world') # 'Hello, world'
+print('Hi, %s, you have $%d.' % ('Michael', 1000000)) # 'Hi, Michael, you have $1000000.'
 
+# 如果 % 是一个普通字符这样处理
+print('growth rate: %d %%' % 7) # growth rate: 7 %
+
+# format 格式化方法，比较麻烦
+print('Hello, {0}, 成绩提升了 {1:.1f}%'.format('小明', 17.125)) # 'Hello, 小明, 成绩提升了 17.1%'
+
+# f-string 格式化处理方法
 r = 2.5
 s = 3.14 * r ** 2
 print(f'The area of a circle with radius {r} is {s:.2f}')
-The area of a circle with radius 2.5 is 19.62
+# The area of a circle with radius 2.5 is 19.62
 
 ```
 
-2. list，tuple
+3. list，tuple
 
 ```python
 # list 类似js数组
@@ -146,7 +161,7 @@ list(range(5)) # range 生成一个指定整数序列
 [0, 1, 2, 3, 4]
 ```
 
-3. 条件判断
+4. 条件判断
 
 ```python
 # if语句执行有个特点，它是从上往下判断，如果在某个判断上是True，把该判断对应的语句执行后，就忽略掉剩下的elif和else
@@ -160,7 +175,7 @@ else:
 ```
 
 
-4. 循环
+5. 循环
 
 ```python
 # for in
@@ -178,7 +193,7 @@ print(sum)
 ```
 
 
-4. dict，set
+6. dict，set
 
 * dict和list比较，dict有以下几个特点：
 
