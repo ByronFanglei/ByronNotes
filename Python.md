@@ -141,8 +141,8 @@ print(f'The area of a circle with radius {r} is {s:.2f}')
 ```python
 # list 类似js数组
 classname = [1,2,3,4,5]
-len(classname)
-5
+print(len(classname)) # 5
+print(classname[0], classname[-1], classname[len(classname) - 1]) # 1 5 5
 
 # 尾部添加元素
 classname.append(111) # [1, 2, 3, 4, 5, 111]
@@ -152,7 +152,7 @@ classmates.insert(1, 'Jack') # ['Jack', 1, 2, 3, 4, 5, 111]
 classname.pop()
 classname.pop(1)
 
-# tuple 元组 tuple和list非常类似，但是tuple一旦初始化就不能修改
+# tuple 元组 tuple和list非常类似，但是tuple一旦初始化就不能修改, 不可变保证了更安全，如果可能，能用tuple代替list就尽量用tuple
 classmates = ('Michael', 'Bob', 'Tracy')
 # 当定一个只有一个元素的元祖 需要这样设置
 classmates = ('Michael',)
@@ -206,38 +206,33 @@ print(sum)
 	2. 占用空间小，浪费内存很少。
 
 ```python
-# dict 类似于 js 的Map key value形式的存储数据，或者说js只是模仿者吧
+# dict 类似于其他语言的map
 d = {'Michael': 95, 'Bob': 75, 'Tracy': 85}
-d['Michael']
-95
+print(d['Michael']) # 95
 
 # 添加
 d['Adam'] = 67
 
 # 判断 key 是否存在
-'Bob' in d
-True
-'Boba' in d
-False
+print('Bob' in d) # True
+print('Boba' in d) # False
+
 
 # 通过dict提供的get()方法，如果key不存在，可以返回None，或者自己指定的value
-d.get('Thomas')
-d.get('Thomas', '么有')
-'么有'
+print(d.get('Michael')) # 95 
+print(d.get('Thomas')) # None 
+print(d.get('Thomas', '么有')) # '么有'
+
 
 # 删除某个值
 d = {'Michael': 95, 'Tracy': 85, 'Bob': 75}
-d.pop('Bob')
-75
-d
-{'Michael': 95, 'Tracy': 85}
-
+print(d.pop('Bob')) # 75
+print(d) # {'Michael': 95, 'Tracy': 85}
 
 
 # set类似于 js 的Set，重复元素会被自动过滤
 s = set([1, 2, 3])	# 写用的 []
-s
-{1, 2, 3}		# 查看时 {}
+print(s) # {1, 2, 3} 查看时 {}
 
 # 添加元素
 a.add(111)
@@ -248,12 +243,20 @@ a.remove(111)
 s1 = set([1, 2, 3])
 s2 = set([2, 3, 4])
 # 两个元素的交集
-s1 & s2
-{2, 3}
+print(s1 & s2) # {2, 3}
 # 两个元素的并集
-s1 | s2
-{1, 2, 3, 4}
+print(s1 | s2) # {1, 2, 3, 4}
 ```
+
+* dict与list比较
+
+dict：dict是用空间来换取时间的一种方法
+*   查找和插入的速度极快，不会随着key的增加而变慢；
+*   需要占用大量的内存，内存浪费多。
+
+list：
+*   查找和插入的时间随着元素的增加而增加；
+*   占用空间小，浪费内存很少。
 
 
 ## 函数部分
