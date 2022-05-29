@@ -17,13 +17,66 @@ exit()
 ```
 
 
-## 基础语法
+## python基础
 
 1. 基本命令
 
 ```python
+# Python的整数没有大小限制, Python的浮点数也没有大小限制，但是超出一定范围就直接表示为inf（无限大）
+# 当python输出很大的数字时，Python允许在数字中间以_分隔
+print(10_000_000_000)
+print(10000000000)
+
+# 转义字符，跟其他语言转义大致相同，这里说一下python不转义的方法 r''
+print('q \t q') # q        q
+
+print(r'q \t q') # q \t q
+
+# 如果字符串内部有很多换行，用\n写在一行里不好阅读，为了简化，Python允许用'''...'''的格式表示多行内容
+print('''
+    第一行
+    第二行
+    第三行
+''')
+#    第一行
+#    第二行
+#    第三行
+
+print('''hello,\n
+world''')
+# hello,\n
+# world
+
+print(r'''hello,\n
+world''')
+# hello,
+
+# world
+
+
+# 布尔值 True and False
+# and运算是与运算，只有所有都为True，and运算结果才是True
+# or运算是或运算，只要其中有一个为True，or运算结果就是True
+# not运算是非运算，它是一个单目运算符，把True变成False，False变成True
+
+# 空值 None，None不能理解为0，因为0是有意义的，而None是一个特殊的空值
+
+a = 'ABC'
+b = a
+a = 'XYZ'
+print(a, b)
+# XYZ ABC
+
+# 除法，/除法计算结果是浮点数，即使是两个整数恰好整除，结果也是浮点数
+print(9 / 3) # 3.0
+# 还有一种除法是//，称为地板除，两个整数的除法仍然是整数
+print(9 // 3) # 3
+print(10 // 3) # 3
+
+
 # 输入
 name = input()
+
 # 输出
 print(name)
 
