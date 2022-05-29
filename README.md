@@ -1,3 +1,2 @@
 # ByronNotes
-学习前端总结笔记
-github dev
+学习笔记总结
