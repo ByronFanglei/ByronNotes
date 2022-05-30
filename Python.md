@@ -314,6 +314,16 @@ print(isinstance(1, (int, float))) # True
 3. 函数参数
 
 ```python
+# 函数的默认参数与js用法基本一致
+def enroll(name, gender, age=6, city='Beijing'):
+    print('name:', name)
+    print('gender:', gender)
+    print('age:', age)
+    print('city:', city)
+
+enroll('Bob', 'M', 7) # 按顺序写参数值
+enroll('Adam', 'M', city='Tianjin') # 可以直接写参数名定义某个参数
+
 # 参数前加 *会使参数numbers接收到的是一个tuple，可以立即成 js 的arguments
 def calc(*numbers):
     sum = 0
@@ -321,29 +331,36 @@ def calc(*numbers):
         sum = sum + n * n
     return sum
     
+calc(1, 2, 3, 4, 5)
 # 打印list 或者 tuple 加* 可以理解为 js 的解构
 nums = [1, 2, 3, 4, 5]
-print(*nums, nums)
-# 1 2 3 4 5 [1, 2, 3, 4, 5]
+print(*nums, nums) # 1 2 3 4 5 [1, 2, 3, 4, 5]
 
 
 # 关键字参数
 # **extra表示把extra这个dict的所有key-value用关键字参数传入到函数的**kw参数，kw将获得一个dict，注意kw获得的dict是extra的一份拷贝，对kw的改动不会影响到函数外的extra
 def person(name, age, **kw):
     print('name:', name, 'age:', age, 'other:', kw)
+
 extra = {'city': 'Beijing', 'job': 'Engineer'}
 person('byron', 18, **extra)
 # name: byron age: 18 other: {'city': 'Beijing', 'job': 'Engineer'}
 
 
-# 命名关键字参数，* 号后面的是必须要传递的
+# 以上操作是可以传递任意命名的关键字参数，如果需要传递指定命名的参数需要在* 号后面添加参数
 def person(name, age, *, city, job):
     print(name, age, city, job)
+    
 person('Jack', 24, city='Beijing', job='Engineer')
+
+# 如果函数定义中已经有了一个可变参数，后面跟着的命名关键字参数就不再需要一个特殊分隔符*了：
+def person(name, age, *args, city, job):
+    print(name, age, args, city, job)
 
 
 def f1(a, b, c=0, *args, **kw):
     print('a =', a, 'b =', b, 'c =', c, 'args =', args, 'kw =', kw, isinstance(args, tuple), isinstance(kw, dict))
+
 f1(1, 2, 3, 111, 222, 333, aa=1, bb=2)
 # a = 1 b = 2 c = 3 args = (111, 222, 333) kw = {'aa': 1, 'bb': 2} True True
 
@@ -392,9 +409,6 @@ print(fact(5))
 
 # 这里怎么感觉使用了尾递归就是把栈溢出的可能嫁接到另一个函数了
 ```
-
-
-
 
 
 ## 函数部分
