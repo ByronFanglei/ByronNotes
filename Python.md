@@ -416,7 +416,7 @@ print(fact(5))
 1. 高级特性
 
 ```python
-# 切片 [0:3] 意思就是 从0开始截取3个，当然如果是0开始的话可以不用写0 直接[:3], 当然也支持负数
+# 切片 [0:3] 意思就是 从0开始截取3个，当然如果是0开始的话可以不用写0 直接[:3], 当然也支持负数，倒数第一个元素的索引是-1
 L = ['Michael', 'Sarah', 'Tracy', 'Bob', 'Jack']
 print(L[1:3], L[-2:], L[-2:-1])
 # ['Sarah', 'Tracy'] ['Bob', 'Jack'] ['Bob']
@@ -425,20 +425,52 @@ print(L[1:3], L[-2:], L[-2:-1])
 # [0::5] 表示 从0开始每5个取一次，如果是0开始的话，这个0可以不写
 # 甚至可以这样 L[:]，直接复制当前的 list
 L = list(range(20))
-print(L[::5], L[10::5])
-[0, 5, 10, 15] [10, 15]
+print(L[:10:2]) # [0, 2, 4, 6, 8] 表示前十个数字，每两个取一个数
+print(L[::5]) # [0, 5, 10, 15] 表示每5个取一个数字
+print(L[10::5]) # [10, 15] 表示从10开始每5个取一个数字
+print(L[:]) # 表示复制当前list
+
+# tuple也可以使用切片操作，只不过操作后的还是tuple
 
 # 字符串也可以这么搞
-'ABCDEFG'[:3]
-'ABC'
-'ABCDEFG'[::2]
-'ACEG'
+print('ABCDEFG'[:3]) # 'ABC'
+print('ABCDEFG'[::2]) # 'ACEG'
+
+# for 循环 dict
+d = {'a': 1, 'b': 2, 'c': 3}
+# 循环key
+for key in d:
+    print(key)
+# 循环value
+for value in d.values():
+    print(value)
+# 循环key value
+for k, v in d.items():
+    print(k, v)
 
 # 如果要打印list的下标可以使用enumerate包装一下
 for i, value in enumerate(['A', 'B', 'C']):
      print(i, value)
      
-     
+# 判断是否是一个Iterable对象
+from collections.abc import Iterable
+print(isinstance('abc', Iterable)) # True
+print(isinstance(123, Iterable)) # False
+
+# list的下标循环
+for k, v in enumerate([1, 2, 3]):
+    print(k, v)
+# 0 1
+# 1 2
+# 2 3
+
+# fro循环引入两个变量 (整挺好)
+for x, y in [(1, 1), (2, 4), (3, 9)]:
+    print(x, y)
+# 1 1
+# 2 4
+# 3 9
+
 # range 
 # list(range(1, 10, 3), 表示生成一个从 1 开始 10 结束的list，每个 3 个取一个值
 [1, 4, 7]
