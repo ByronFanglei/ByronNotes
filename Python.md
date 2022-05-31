@@ -451,11 +451,6 @@ for k, v in d.items():
 # 如果要打印list的下标可以使用enumerate包装一下
 for i, value in enumerate(['A', 'B', 'C']):
      print(i, value)
-     
-# 判断是否是一个Iterable对象
-from collections.abc import Iterable
-print(isinstance('abc', Iterable)) # True
-print(isinstance(123, Iterable)) # False
 
 # list的下标循环
 for k, v in enumerate([1, 2, 3]):
@@ -471,16 +466,29 @@ for x, y in [(1, 1), (2, 4), (3, 9)]:
 # 2 4
 # 3 9
 
-# range 
+# range 要生成list [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]可以用list(range(1, 11))
 # list(range(1, 10, 3), 表示生成一个从 1 开始 10 结束的list，每个 3 个取一个值
 [1, 4, 7]
 
-# 一行代码生成指定的list，这里可以看到 for 前的 if 是有 else 的 for 后的 if 是没有 else 且是不可以加的，是因为之前的 if else 是一个 表达式，之后的 if 是一个过滤条件 
-print([x * x for x in range(1, 10) if x % 2 == 0])
-[4, 16, 36, 64]
-print([x * x if x % 2 == 0 else -x * x for x in range(1, 10)])
-[-1, 4, -9, 16, -25, 36, -49, 64, -81]
+# 一行代码生成list
+print([x * x for x in range(1, 10)]) # [1, 4, 9, 16, 25, 36, 49, 64, 81]
 
+# 生成list后再添加条件语句
+print([x * x for x in range(1, 10) if x % 2 == 0]) # [4, 16, 36, 64]
+
+# 还可以使用两层循环，可以生成全排列
+print([x + y for x in 'ABC' for y in 'DEF']) # ['AD', 'AE', 'AF', 'BD', 'BE', 'BF', 'CD', 'CE', 'CF']
+
+# 参数也可以使用dict
+d = {'x': 'A', 'y': 'B', 'z': 'C' }
+print([k + '=' + v for k, v in d.items()]) # ['x=A', 'y=B', 'z=C']
+
+
+# 一行代码生成指定的list，这里可以看到 for 前的 if 是有 else 的 for 后的 if 是没有 else 且是不可以加的，是因为之前的 if else 是一个 表达式，之后的 if 是一个过滤条件 
+print([x * x for x in range(1, 10) if x % 2 == 0]) # [4, 16, 36, 64]
+print([x * x if x % 2 == 0 else -x * x for x in range(1, 10)]) # [-1, 4, -9, 16, -25, 36, -49, 64, -81]
+
+# 判断是否是一个Iterable对象
 # Iterable 类型包括：list、tuple、dict、set、str，generator
 from collections.abc import Iterable
 print(isinstance([], Iterable))
