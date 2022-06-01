@@ -488,31 +488,6 @@ print([k + '=' + v for k, v in d.items()]) # ['x=A', 'y=B', 'z=C']
 print([x * x for x in range(1, 10) if x % 2 == 0]) # [4, 16, 36, 64]
 print([x * x if x % 2 == 0 else -x * x for x in range(1, 10)]) # [-1, 4, -9, 16, -25, 36, -49, 64, -81]
 
-# 判断是否是一个Iterable对象
-# Iterable 类型包括：list、tuple、dict、set、str，generator
-from collections.abc import Iterable
-print(isinstance([], Iterable))
-True
-print(isinstance({}, Iterable))
-True
-print(isinstance('abc', Iterable))
-True
-print(isinstance((x for x in range(10)), Iterable))
-True
-print(isinstance(100, Iterable))
-False
-
-
-# Iterator：可以被next()函数调用并不断返回下一个值的对象称为迭代器
-from collections.abc import Iterator
-isinstance((x for x in range(10)), Iterator)
-True
-isinstance([], Iterator)
-False
-isinstance({}, Iterator)
-False
-isinstance('abc', Iterator)
-False
 
 # generator 生成器（迭代器），只要把一个列表生成式的[]改成()，就创建了一个generator
 L = [x * x for x in range(10)] # list
@@ -521,12 +496,29 @@ G = (x * x for x in range(10)) # generator, 需要通过next(G) 打印出generat
 # 如果一个函数包含 yield 那么这个函数就不是不同函数，而是 generator 函数
 # 使用for循环时候是拿不到 generator 的 return 值的，如果想要拿到返回值，必须捕获 StopIteration 错误，返回值包含在 StopIteration 的 value 中
 
+# isinstance 可以判断当前对象是否为Iterable 或者 Iterator
+# 判断是否是一个Iterable对象 (可迭代对象)
+# Iterable 类型包括：list、tuple、dict、set、str，generator
+from collections.abc import Iterable
+print(isinstance([], Iterable)) # True
+print(isinstance({}, Iterable)) # True
+print(isinstance('abc', Iterable)) # True
+print(isinstance((x for x in range(10)), Iterable)) # True
+print(isinstance(100, Iterable)) # False
+
+
+# Iterator(迭代器)：可以被for循环而且可以被next()函数调用并不断返回下一个值的对象称为迭代器，知道抛出 StopIteration 表示无法返回下一个值了
+from collections.abc import Iterator
+print(isinstance((x for x in range(10)), Iterator)) # True
+print(isinstance([], Iterator)) # False
+print(isinstance({}, Iterator)) # False
+print(isinstance('abc', Iterator)) # False
+
 # 生成器都是Iterator对象，但list、dict、str虽然是Iterable，却不是Iterator。
 # 把list、dict、str等Iterable变成Iterator可以使用iter()函数：
-isinstance(iter([]), Iterator)
-True
-isinstance(iter('abc'), Iterator)
-True
+print(isinstance(iter([]), Iterator)) # True
+print(isinstance(iter('abc'), Iterator)) # True
+
 
 # 凡是可作用于for循环的对象都是Iterable类型
 # 凡是可作用于next()函数的对象都是Iterator类型，它们表示一个惰性计算的序列
