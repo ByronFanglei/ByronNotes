@@ -514,6 +514,13 @@ False
 isinstance('abc', Iterator)
 False
 
+# generator 生成器（迭代器），只要把一个列表生成式的[]改成()，就创建了一个generator
+L = [x * x for x in range(10)] # list
+G = (x * x for x in range(10)) # generator, 需要通过next(G) 打印出generator内容，generator保存的是算法，每次调用next(G)，就计算出g的下一个元素的值，直到计算到最后一个元素，没有更多的元素时，抛出StopIteration的错误（一般来说都会用for循环generator，所以这个错误一般不用考虑）
+
+# 如果一个函数包含 yield 那么这个函数就不是不同函数，而是 generator 函数
+# 使用for循环时候是拿不到 generator 的 return 值的，如果想要拿到返回值，必须捕获 StopIteration 错误，返回值包含在 StopIteration 的 value 中
+
 # 生成器都是Iterator对象，但list、dict、str虽然是Iterable，却不是Iterator。
 # 把list、dict、str等Iterable变成Iterator可以使用iter()函数：
 isinstance(iter([]), Iterator)
