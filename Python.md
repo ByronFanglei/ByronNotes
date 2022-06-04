@@ -19,6 +19,30 @@ exit()
 
 ## python基础
 
+0. 一些常用的方法
+
+```python
+# int
+
+
+# str
+1. '123.456'.index('.')  字符串获取制定字符的位置
+2. ''.join(["a", "b", "c"])  str类型转换为字符串
+3. strip() 方法用于移除字符串头尾指定的字符（默认为空格或换行符）或字符序列
+
+
+
+# list
+1. '123.456'.split('.'). 字符串转换为数组
+
+# dict
+
+
+
+```
+
+
+
 1. 基本命令
 
 ```python
@@ -429,6 +453,7 @@ print(L[:10:2]) # [0, 2, 4, 6, 8] 表示前十个数字，每两个取一个数
 print(L[::5]) # [0, 5, 10, 15] 表示每5个取一个数字
 print(L[10::5]) # [10, 15] 表示从10开始每5个取一个数字
 print(L[:]) # 表示复制当前list
+print(L[::-1]) # ['Jack', 'Bob', 'Tracy', 'Sarah', 'Michael'] 反转当前字符串，很有用，优雅 
 
 # tuple也可以使用切片操作，只不过操作后的还是tuple
 
@@ -530,36 +555,73 @@ print(isinstance(iter('abc'), Iterator)) # True
 1. 高阶函数
 
 ```python
-# map 传入的第一个参数是f，即函数对象本身。由于结果r是一个Iterator，Iterator是惰性序列，因此通过list()函数让它把整个序列都计算出来并返回一个list
+# map 传入两个参数，一个是函数，一个是Iterable，即函数对象本身。由于结果r是一个Iterator，Iterator是惰性序列，因此通过list()函数让它把整个序列都计算出来并返回一个list
 def f(x):
     return x * x
 
 r = map(f, [1, 2, 3, 4, 5, 6, 7, 8, 9])
-print(list(r))
-[1, 4, 9, 16, 25, 36, 49, 64, 81]
+print(list(r)) # [1, 4, 9, 16, 25, 36, 49, 64, 81]
+
 
 # reduce reduce把一个函数作用在一个序列[x1, x2, x3, ...]上，这个函数必须接收两个参数，reduce把结果继续和序列的下一个元素做累积计算
 from functools import reduce
 def fn(x, y):
 	return x * 10 + y
 
-reduce(fn, [1, 3, 5, 7, 9])
-13579
+print(reduce(fn, [1, 3, 5, 7, 9])) # 13579
 
-# filter filter()把传入的函数依次作用于每个元素，然后根据返回值是True还是False决定保留还是丢弃该元素
+
+# 比如这样一个操作，将字符串13579转位数字13579
+digits = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9}
+
+def transInt():
+    def fn1(x, y):
+        return x * 10 + y
+
+    def char2(x):
+        return digits[x]
+    return reduce(fn1, map(char2, '13579'))
+
+
+print(transInt(), isinstance(transInt(), int)) # 13579 True
+
+# 以上可以用 lambda 函数进行简化
+def char2num(s):
+    return digits[s]
+
+def str2int(s):
+    return reduce(lambda x, y: x * 10 + y, map(char2num, s))
+
+print(str2int('13579')) # 13579
+
+
+# filter 接收一个函数和一个序列，把传入的函数依次作用于每个元素，然后根据返回值是True还是False决定保留还是丢弃该元素
 def is_odd(n):
     return n % 2 == 1
 
-list(filter(is_odd, [1, 2, 4, 5, 6, 9, 10, 15]))
-[1, 5, 9, 15]
+print(list(filter(is_odd, [1, 2, 4, 5, 6, 9, 10, 15]))) # [1, 5, 9, 15]
+print(list(filter(lambda x: x % 2 == 0, [1, 2, 4, 5, 6, 9, 10, 15])))
 
 # sorted 排序算法
-sorted([36, 5, -12, 9, -21])
-[-21, -12, 5, 9, 36]
+# 比较只有数字的list
+print(sorted([36, 5, -12, 9, -21])) # [-21, -12, 5, 9, 36]
+
 # sorted第二个参数可以传递一个key，可以对排序的内容进行处理后再次排序
-sorted([36, 5, -12, 9, -21], key=abs)
-[5, 9, -12, -21, 36]
+print(sorted([36, 5, -12, 9, -21], key=abs)) # [5, 9, -12, -21, 36]
+
 # 如果需要进行反向排序，传递第三个参数即可
-sorted(['bob', 'about', 'Zoo', 'Credit'], key=str.lower, reverse=True)
-['Zoo', 'Credit', 'bob', 'about']
+print(sorted(['Zoo', 'Credit', 'bob', 'about'], key=str.lower, reverse=True)) # ['Zoo', 'Credit', 'bob', 'about']
+
+# 当然我们可以自定义key
+L = [('Bob', 75), ('Adam', 92), ('Bart', 66), ('Lisa', 88)]
+# 按照名字拍粗
+def by_name(t):
+    return t[0]
+
+print(sorted(L, key=by_name))
+# 按照成绩从高到低排序
+def by_score(t):
+    return -t[1]
+
+print(sorted(L, key=by_score))
 ```
