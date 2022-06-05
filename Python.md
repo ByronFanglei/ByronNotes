@@ -624,4 +624,144 @@ def by_score(t):
     return -t[1]
 
 print(sorted(L, key=by_score))
+
+
+
+# 返回函数
+# 我们在函数lazy_sum中又定义了函数sum，并且，内部函数sum可以引用外部函数lazy_sum的参数和局部变量，当lazy_sum返回函数sum时，相关参数和变量都保存在返回的函数中，这种称为“闭包（Closure）”的程序结构拥有极大的威力
+def lazy_sum(*args):
+    def sum():
+        ax = 0
+        for n in args:
+            ax = ax + n
+        return ax
+    return sum
+
+
+f1 = lazy_sum(1, 3, 5, 7, 9)
+f2 = lazy_sum(1, 3, 5, 7, 9)
+print(f1 == f2) # False
+
+# 闭包  返回函数不要引用任何循环变量，或者后续会发生变化的变量
+def count():
+    fs = []
+    for i in range(1, 4):
+        def f():
+             return i*i
+        fs.append(f)
+    return fs
+
+
+f1, f2, f3 = count()
+print(f1(), f2(), f3()) # 9 9 9
+# 返回内容全部都是9 原因在于返回的函数引用了变量i，但它并非立刻执行。等到3个函数都返回时，它们所引用的变量i已经变成了3，因此最终结果为9
+
+# 怎样处理以上问题 
+# 第一种：可以再创建一个函数，用该函数的参数绑定循环变量当前的值，无论该循环变量后续如何更改，已绑定到函数参数的值不变
+def count():
+    def f(j):
+        def g():
+            return j * j
+        return g
+    fs = []
+    for i in range(1, 4):
+        fs.append(f(i))
+    return fs
+
+
+f1, f2, f3 = count()
+print(f1(), f2(), f3()) # 1 4 9
+
+# 第二种：nonlocal
+def createCounter():
+    x = 0
+    def counter():
+        # 使用闭包时，对外层变量赋值前，需要先使用nonlocal声明该变量不是当前函数的局部变量
+        nonlocal x
+        x = x + 1
+        return x
+    return counter
+
+counterA = createCounter()
+print(counterA(), counterA(), counterA(), counterA(), counterA()) # 1 2 3 4 5
+
+
+
+# 匿名函数 lambda
+list(map(lambda x: x * x, [1, 2, 3, 4, 5, 6, 7, 8, 9]))
+    # 这里的lambda x: x * x 其实就等于
+def f(x):
+    return x * x
+
+# 匿名函数有个限制，就是只能有一个表达式，不用写return，返回值就是该表达式的结果
+# 当然也可以将匿名函数赋值给一个变量，再利用变量来调用该函数
+f = lambda x: x * x
+print(f(5)) # 25
+
+
+
+# 装饰器
+# 函数对象有一个__name__属性，可以拿到函数的名字
+def now():
+    print('拉面说')
+
+f = now
+print(now.__name__, f.__name__) # now now
+
+# 假设我们要增强now()函数的功能，比如，在函数调用前后自动打印日志，但又不希望修改now()函数的定义，这种在代码运行期间动态增加功能的方式，称之为“装饰器”（Decorator）
+
+# 日志装饰器
+def log(func):
+    def wrapper(*arg, **kw):
+        print('call %s():' % func.__name__)
+        return func(*arg, **kw)
+    return wrapper
+
+@log
+def now():
+    print('拉面说')
+# @log 相当于执行了以下这行代码
+# now = log(now)
+
+now() # call now(): 拉面说
+print(now.__name__) # wrapper
+
+# 如果装饰器本身要传如一个参数，那么就需要在增加一层嵌套了
+def log(text):
+    def decorator(func):
+        def wrapper(*arg, **kw):
+            print('%s %s():' % (text, func.__name__))
+            return func(*arg, **kw)
+        return wrapper
+    return decorator
+
+@log('自定义内容')
+
+# 可以看到上面的 now.__name__ 打印的是 wrapper 而不是当前函数 now，所以我们需要处理使用装饰器后的函数名字
+
+import functools
+
+def log(text):
+    def decorator(func):
+        # 将函数名归正
+        @functools.wraps(func)
+        def wrapper(*arg, **kw):
+            print('%s %s():' % (text, func.__name__))
+            return func(*arg, **kw)
+        return wrapper
+    return decorator
+
+@log('自定义内容')
+now() # 自定义内容 now(): 拉面说
+print(now.__name__) # now
+
+
+
+# 便函数 functools.partial，把一个函数的某些参数给固定住（也就是设置默认值），返回一个新的函数，调用这个新函数会更简单
+import functools
+int2 = functools.partial(int, base=2) # int(x,2)
+print(int2('1000000')) # 64
+
+max2 = functools.partial(max, 10) # max(10,)
+print(max2(1,2,3,4,6)) # 10 max(10,1,2,3,4,6)
 ```
