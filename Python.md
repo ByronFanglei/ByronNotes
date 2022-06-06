@@ -765,3 +765,48 @@ print(int2('1000000')) # 64
 max2 = functools.partial(max, 10) # max(10,)
 print(max2(1,2,3,4,6)) # 10 max(10,1,2,3,4,6)
 ```
+
+
+## 函数部分
+
+1. 模块，一个abc.py的文件就是一个名字叫abc的模块，一个xyz.py的文件就是一个名字叫xyz的模块，假设我们的abc和xyz这两个模块名字与其他模块冲突了，于是我们可以通过包来组织模块，避免冲突。方法是选择一个顶层包名，比如mycompany，按照如下目录存放：
+
+```
+mycompany
+├─ __init__.py
+├─ abc.py
+└─ xyz.py
+```
+    引入了包以后，只要顶层的包名不与别人冲突，那所有模块都不会与别人冲突。现在，abc.py模块的名字就变成了mycompany.abc，类似的，xyz.py的模块名变成了mycompany.xyz,每一个包目录下面都会有一个__init__.py的文件，这个文件是必须存在的，否则，Python就把这个目录当成普通目录，而不是一个包。__init__.py可以是空文件，也可以有Python代码，因为__init__.py本身就是一个模块，而它的模块名就是mycompany
+
+
+```python
+# sys模块有一个argv变量，用list存储了命令行的所有参数
+import sys
+
+def test():
+    args = sys.argv
+    print(args)
+    if len(args)==1:
+        print('Hello, world!')
+    elif len(args)==2:
+        print('Hello, %s!' % args[1])
+    else:
+        print('Too many arguments!')
+# 解释下以下两行代码 当我们在命令行运行model模块文件时，Python解释器把一个特殊变量__name__置为__main__，而如果在其他地方导入该hello模块时，if判断将失败，因此，这种if测试可以让一个模块通过命令行运行时执行一些额外的代码，最常见的就是运行测试
+if __name__=='__main__':
+    test()
+
+python3 model.py # ['model.py']
+python3 model.py byron # ['model.py', 'byron']
+
+```
+
+
+2. 作用域
+* 正常的变量是公开的可以被正常引用的，比如：abc，x123，PI等，
+* 类似__xxx__这样的变量是特殊变量，可以被直接引用，但是有特殊用途，我们自己的变量一般不要用这种变量名
+* 类似_xxx和__xxx这样的函数或变量就是非公开的（private），不应该被直接引用，比如_abc，__abc等
+
+
+3. 第三方模块，Python中，安装第三方模块，是通过包管理工具pip（pip3）完成的
