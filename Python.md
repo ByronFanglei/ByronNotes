@@ -767,7 +767,7 @@ print(max2(1,2,3,4,6)) # 10 max(10,1,2,3,4,6)
 ```
 
 
-## 函数部分
+## 模块部分
 
 1. 模块，一个abc.py的文件就是一个名字叫abc的模块，一个xyz.py的文件就是一个名字叫xyz的模块，假设我们的abc和xyz这两个模块名字与其他模块冲突了，于是我们可以通过包来组织模块，避免冲突。方法是选择一个顶层包名，比如mycompany，按照如下目录存放：
 
@@ -810,3 +810,29 @@ python3 model.py byron # ['model.py', 'byron']
 
 
 3. 第三方模块，Python中，安装第三方模块，是通过包管理工具pip（pip3）完成的
+
+
+
+## 面向对象
+
+1. 类跟实例
+
+```python
+# Student 为类名，(object)表示该类是从哪个类继承下来的
+class Student(object):
+    # __init__ 类似于js的 constructor，进行初始化
+    def __init__(self, name, score):
+        self.name = name
+        self.score = score
+    
+     def print_score(self, test):
+        print('我叫 %s 我今年 %d 岁. test' % (self.name, 
+        self.score))
+
+# 实力化
+bart = Student('byron', 24)
+bart.print_score(‘test’) # 我叫 byron 我今年 24 岁. test
+
+```
+
+2. 访问限制
