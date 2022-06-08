@@ -832,7 +832,114 @@ class Student(object):
 # 实力化
 bart = Student('byron', 24)
 bart.print_score(‘test’) # 我叫 byron 我今年 24 岁. test
+print(bart.name, bart.score) # byron 24
+```
+
+2. 访问限制，如上代码，实例化一个类后， 我们可以直接调用或修改内部的属性，但是一般来说内部属性是不能够在外部随便调用的
+
+```python
+class Student(object):
+    # __init__ 类似于js的 constructor，进行初始化
+    def __init__(self, name, score):
+        # 变为私有变量，只有内部可以访问
+        self.__name = name
+        self.__score = score
+    
+     def print_score(self):
+        print('我叫 %s 我今年 %d 岁' % (self.__name, 
+        self.__score))
+    # 外部获取内部变量
+    def get_name(self):
+        return self.__name
+    # 外部修改内部变量
+    def set_name(self, name):
+        # 这里可以对赋值参数做一些处理，掌控主动权
+        self.__name = name
+
+
+print(bart.__name) # 'Student' object has no attribute '__name'
+# 私有变量其实可以这样访问，是因为解释器把 __name 变成了 _Student__name，但是不同的解释器可能会变成的名字不同，所以 强烈不建议这么搞
+# print(bart._Student__name)
+```
+
+
+3. 继承跟多态
+
+```python
+class Animal(object):
+    def run(self):
+        print('Animal is running...')
+    
+    def eat(self):
+        print('Animal Eating meat...')
+
+
+class Dog(Animal):
+    def eat(self):
+        print('Dog Eating meat...')
+
+# 对于Dog来说，Animal就是它的父类，对于Animal来说，Dog就是它的子类，子类可以继承父类的方法（这就是继承）
+dog = Dog()
+dog.run() # Animal is running...
+# 当子类和父类都存在相同的方法时候，子类会覆盖父类的方法（这就是多态）
+dog.eat() # Dog Eating meat...
+
+a = list()
+b = Animal()
+c = Dog()
+print(isinstance(a, list)) # True
+print(isinstance(b, Animal)) # True
+print(isinstance(b, Dog)) # False Dog可以看成Animal，但Animal不可以看成Dog
+print(isinstance(c, Dog)) # True
+print(isinstance(c, Animal)) # True
+
+# 继承可以把父类的所有功能都直接拿过来，这样就不必重零做起，子类只需要新增自己特有的方法，也可以把父类不适合的方法覆盖重写
+
+# 动态语言的鸭子类型特点决定了继承不像静态语言那样是必须的
 
 ```
 
-2. 访问限制
+4. 获取对象的信息
+
+* type 基本类型都可以用 type 来进行判断
+
+```python
+print(type(123)) # <class 'int'>
+print(type('123')) # <class 'str'>
+print(type(None)) # <class 'NoneType'>
+print(type(abs)) # <class 'builtin_function_or_method'>
+b = Animal()
+print(type(b)) # <class '__main__.Animal'>
+print(type(type('123'))) # <class 'type'>
+print(type(123)==int) # True
+print(type('abc')==str) # True
+
+# 判断基本数据类型可以直接写int，str等，但如果要判断一个对象可以使用types模块中定义的常量
+import types
+
+def fn():
+    pass
+
+print(type(fn)==types.FunctionType) # True
+print(type(abs)==types.BuiltinFunctionType) # True
+print(type(lambda x: x)==types.LambdaType) # True
+print(type((x for x in range(10)))==types.GeneratorType) # True
+
+```
+
+* isinstance()：优先使用
+
+```python
+print(isinstance('a', str)) # True
+print(isinstance(123, int)) # True
+print(isinstance(b'a', bytes)) # True
+# 判断是否为某一种类型
+print(isinstance([1, 2, 3], (list, tuple))) # True
+# 判断类可以向上看
+
+```
+
+* dir()，获得一个对象的所有属性和方法
+
+```python
+```
