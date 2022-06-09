@@ -942,4 +942,102 @@ print(isinstance([1, 2, 3], (list, tuple))) # True
 * dir()，获得一个对象的所有属性和方法
 
 ```python
+dir('ABC')
+# ['__add__', '__class__',..., '__subclasshook__', 'capitalize', 'casefold',..., 'zfill']
+
+# 类似__xxx__的属性和方法在Python中都是有特殊用途的，比如__len__方法返回长度。在Python中，如果你调用len()函数试图获取一个对象的长度，实际上，在len()函数内部，它自动去调用该对象的__len__()方法
+
+# len('ABC') == 'ABC'.__len__()
+
+# getattr()、setattr()以及hasattr()，我们可以直接操作一个对象的状态
+
+class MyDog(object):
+    def __init__(self):
+        self.x = 1
+
+print(hasattr(dog, 'x')) # True
+setattr(dog, 'x', 123) # 将dog中的x设置123
+print(hasattr(dog, 'y')) # False
+print(getattr(dog, 'x')) # 123
+print(dog.x) # 123
+print(getattr(dog, 'z')) # error AttributeError
+print(getattr(dog, 'z', 404)) # 404 如果没有找到，那么就用默认值
+```
+
+* 实例属性和类属性，编程过程中，千万不要对实例属性和类属性使用相同的名字，因为相同名称的实例属性将屏蔽掉类属性，但是当你删除实例属性后，再使用相同的名称，访问到的将是类属性
+
+
+
+## 面向对象高级编程
+
+1. 使用__slots__
+
+```python
+# 给一个实例添加一个方法
+class Student(object):
+    pass
+
+s = Student()
+
+def set_age(self, name):
+    self.name = name
+
+from types import MethodType
+# 使用 MethodType 给实例添加方法
+s.set_age = MethodType(set_age, s)
+s.set_age(123)
+print(s.name) # 123
+
+# Student.set_score = set_score 类中可以直接添加方法
+
+# 限制实例属性 __slots__
+class Student(object):
+    __slots__ = ('name', 'age')
+
+s = Student()
+s.name = 'byron'
+s.age = 321
+# s.score = 123123 # error AttributeError
+
+# __slots__ 对继承的子类是无效的
+class GraduateStudent(Student):
+    pass
+
+g = GraduateStudent()
+g.score = 123
+
+```
+
+2. @property，可以优雅的给变量添加 get、set方法
+
+```python
+class Student(object):
+    # 添加 @property 就是将score设置成一个get方法，类似与装饰器
+    @property
+    def score(self):
+        return self._score
+
+    # 添加 @score.setter 就是将setter设置成一个set方法
+    @score.setter
+    def score(self, value):
+        if not isinstance(value, int):
+            raise ValueError('score must be an integer!')
+        self._score = value
+
+    # 如果只有@property，那么就是一个只读的属性，不能写
+    @property
+    def age(self):
+        return 2015 - self._birth
+
+    # 要特别注意：属性的方法名不要和实例变量重名，因为调用s.birth时，首先转换为方法调用，在执行return self.birth时，又视为访问self的属性，于是又转换为方法调用，造成无限递归，最终导致栈溢出报错RecursionError
+    # @property
+    # def birth(self):
+        # return self.birth
+
+
+s = Student()
+s.score = 123 # 转化为s.set_score(60)
+print(s.score) # 转化为s.get_score()
+s.score = '9999' # ValueError: score must be an integer!
+
 ```
