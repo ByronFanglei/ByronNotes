@@ -1188,4 +1188,94 @@ print(Chain().users('michael').timeline.list) # /users/michael/timeline/list
 5. 使用枚举类
 
 ```python
+from enum import Enum, unique
+# 第一种枚举方式
+Month = Enum('Month', ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'))
+# 枚举单个成员
+print(Month.Jan) # Month.Jan
+# 枚举所有成员
+for name, member in Month.__members__.items():
+    # member.value 从 1 开始的
+    print(name, '=>', member, ',', member.value) # Jan => Month.Jan , 1
+
+# 第二种枚举方式
+# @unique装饰器可以帮助我们检查保证没有重复值
+@unique
+class WeekDay(Enum):
+    Sun = 0  # Sun的value被设定为0
+    Mon = 1
+    Tue = 2
+    Wed = 3
+    Thu = 4
+    Fri = 5
+    Sat = 6
+
+print(WeekDay.Sun) # WeekDay.Sun
+print(WeekDay.Sun.name, WeekDay.Sun.value) # Sun 0
+print(WeekDay(1)) # WeekDay.Mon
+for name, member in WeekDay.__members__.items():
+    # member.value 从 0 开始
+    print('%s => %s %d' %(name, member, member.value)) # Sun => WeekDay.Sun 0
+
+```
+
+6. 使用元类
+* type
+
+```python
+# type()函数可以查看一个类型或变量的类型，也可以创建一个类，对没错，就不需要 class Hello(object)... 来创建，从而实现动态创建一个类
+
+def fn(self, name = 'world'):
+    print('Hello %s' % name)
+
+# 要创建一个class对象，type()函数依次传入3个参数：
+# 1. class的名称；
+# 2. 继承的父类集合，注意Python支持多重继承，如果只有一个父类，别忘了tuple的单元素写法；
+# 3. class的方法名称与函数绑定，这里我们把函数fn绑定到方法名hello上
+
+Hello = type('Hellp', (object,), dict(hello=fn))
+h = Hello()
+h.hello() # Hello world
+# 通过type()函数创建的类和直接写class是完全一样的，因为Python解释器遇到class定义时，仅仅是扫描一下class定义的语法，然后调用type()函数创建出class
+
+```
+
+* metaclass
+
+(看这里吧)[https://www.liaoxuefeng.com/wiki/1016959663602400/1017592449371072#0]
+
+
+```python
+# 除了使用type()动态创建类以外，要控制类的创建行为，还可以使用metaclass。
+
+```
+
+
+## 错误、调试和测试
+
+1. 错误处理 try...except...finally...
+
+```python
+try:
+    print('try...')
+    r = 10 / 0
+    print('result:', r)
+# 如果先补货 BaseException 那么下面的错误就捕获不到了，因为BaseException 是整个错误的基类
+# except BaseException as e:
+    # print('BaseException:', e)    
+# 这里可以多次使用except进行捕获错误
+except ValueError as e:
+    print('ValueError:', e)
+except ZeroDivisionError as e:
+    print('ZeroDivisionError:', e)
+else:
+    print('no error!')
+finally:
+    print('finally...')
+
+# try...
+# ZeroDivisionError: division by zero
+# finally...
+
+# Python的错误其实也是class，所有的错误类型都继承自BaseException，所以在多层捕获需要注意错误的父类子类关系，如果先不过一个父类再捕获一个子类，那么这个子类永远也不会捕获到
 ```
