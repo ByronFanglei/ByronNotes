@@ -1041,3 +1041,151 @@ print(s.score) # 转化为s.get_score()
 s.score = '9999' # ValueError: score must be an integer!
 
 ```
+
+3. 多重继承
+
+```python
+class Animal(object):
+    def animate(self):
+        print('animate...')
+
+class Runnable(object):
+    def run(self):
+        print('Running...')
+
+class Dog(Animal, Runnable):
+    pass
+
+d = Dog()
+d.animate() # animate...
+d.run() # Running...
+
+```
+
+4. 定制类
+
+```python
+# __str__：优化打印类的内容
+class Student(object):
+    def __init__(self, name):
+        self._name = name
+        
+    def __str__(self):
+        return 'Student object (name: %s)' % self._name
+    # __str__()返回用户看到的字符串，而__repr__()返回程序开发者看到的字符串，也就是说，__repr__()是为调试服务的
+    __repr__ = __str__
+
+
+# 添加__str__前
+print(Student('byron')) # <__main__.Student object at 0x103fbef10>
+# 添加__str__后
+print(Student('byron')) # Student object (name: byron)
+
+
+# __iter__：返回一个迭代对象，然后会不断调用 __next__ 方法获取下一个值
+# __getitem__：可以实现类似 list 一样，去除对应的元素
+class Fib(object):
+    def __init__(self):
+        self.a, self.b = 0, 1 # 初始化两个计数器a，b
+
+    def __iter__(self):
+        return self # 实例本身就是迭代对象，故返回自己
+
+    def __next__(self):
+        self.a, self.b = self.b, self.a + self.b # 计算下一个值
+        if self.a > 100000: # 退出循环的条件
+            raise StopIteration()
+        return self.a # 返回下一个值
+    
+    def __getitem__(self, item):
+        # 处理单独获取下标方法
+        if isinstance(item, int):
+            a, b = 1, 1
+            for key in range(a, item):
+                a, b = b, a + b
+            return a
+        # 处理list的切片方法，但是没有处理step以及负数
+        if isinstance(item, slice): # 判断当时是否为切片
+            start = item.start
+            stop = item.stop
+            if start is None:
+                start = 0
+            a, b = 1, 1
+            ss = []
+            for key in range(stop):
+                if key >= start:
+                    ss.append(a)
+                a, b = b, a + b
+            return ss
+
+
+for item in Fib():
+    print(item)
+
+print(Fib()[5]) # 5
+print(Fib()[0:5]) # [1, 1, 2, 3, 5]
+
+
+# __getattr__：如果调用不存在的值，那么就会尝试调用该方法
+class Student(object):
+    def __init__(self):
+        self.name = 'byron'
+
+    def __getattr__(self, item):
+        if item == 'score':
+            return 999
+        if item == 'age':
+            return lambda: 25
+        # 最后如果不加 AttributeError 就会返回 None，一般来说类如果找不到属性那么就会报错 AttributeError，所以要加这行return
+        return AttributeError('\'Student\' object has no attribute \'%s\'' % item)
+
+
+s = Student()
+print(s.name) # byron
+print(s.score) # 999
+print(s.age()) # 25
+print(s.a) # 'Student' object has no attribute 'a'
+
+
+# __call__：类是一个可调用的，但是实例化又是一个不可调用的，当我们在类中加上__call__，那么实例化就变成可调用的了
+class Student(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self):
+        print('My name is %s.' % self.name)
+
+
+s = Student('byron')
+s() # My name is byron.
+# callable 判断当前是否为 可调用对象
+print(callable(Student)) # True
+print(callable(s)) # True
+
+# 小案例，根据链式调用返回对应的地址
+class Chain(object):
+
+    def __init__(self, path=''):
+        self._path = path
+
+    def __getattr__(self, path):
+        return Chain('%s/%s' % (self._path, path))
+
+    def __call__(self, path):
+        return Chain('%s/%s' % (self._path, path))
+
+    def __str__(self):
+        return self._path
+
+    __repr__ = __str__
+
+
+print(Chain().status.user.timeline.list) # /status/user/timeline/list
+print(Chain().users('michael').timeline.list) # /users/michael/timeline/list
+
+```
+
+5. 使用枚举类
+
+```python
+```
