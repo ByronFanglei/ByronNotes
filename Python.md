@@ -1278,4 +1278,270 @@ finally:
 # finally...
 
 # Python的错误其实也是class，所有的错误类型都继承自BaseException，所以在多层捕获需要注意错误的父类子类关系，如果先不过一个父类再捕获一个子类，那么这个子类永远也不会捕获到
+
 ```
+
+2. 调试
+
+* print 打log，类似 js 的 console.log
+
+* 断言，凡是用print()来辅助查看的地方，都可以用断言（assert）来替代
+
+```python
+def foo(s):
+    n = int(s)
+    assert n != 0, 'n is zero!'
+    return 10 / n
+
+def main():
+    foo('0')
+
+main() # AssertionError: n is zero!
+
+# 如果代码中充斥着 assert 的话跟 print 也差不多，最后也是要删除。但是Python解释器时可以用-O参数来关闭assert
+# python -O err.py
+
+```
+
+* logging：与 print，assert 相比 logging不会抛出错误，而且可以输出到文件中（建议）
+
+```python
+import logging
+# 可以控制我们要输出信息的级别，有debug，info，warning，error等几个级别，当我们指定level=INFO时，logging.debug就不起作用了。同理，指定level=WARNING后，debug和info就不起作用了
+logging.basicConfig(level=logging.INFO)
+
+s = '0'
+n = int(s)
+logging.info('n = %d' % n)
+print(10 / n)
+
+```
+
+* pdb：可以让程序进行单步调试（很麻烦）
+
+```python
+s = '0'
+n = int(s)
+print(10 / n)
+
+$ python -m pdb err.py # 通过 -m pdb 开启单步调试
+l # 查看代码
+n # 进行单步操作
+p s # 查看 s 变量的内容
+q # 退出调试
+
+```
+
+* pdb.set_trace()：这个方法也是用pdb，但是不需要单步执行，我们只需要import pdb，然后，在可能出错的地方放一个pdb.set_trace()，就可以设置一个断点，断点调试
+
+```python
+import pdb
+
+s = '0'
+n = int(s)
+# 当我们执行代码后，会自动在这行暂停进行 pdb 调试环境
+pdb.set_trace()
+print(10 / n)
+
+$ p s # 查看变量
+$ c # 继续进行运行
+
+```
+
+* 还可以选择 IDE 调试
+
+
+
+## IO
+
+1. 文件读写
+
+```python
+address = '/Users/byron/Desktop/excel.js'
+text = '/Users/byron/Desktop/text.txt'
+
+try:
+    # 打开文件 
+    # r 代表读取、rb 代表二进制文件（图片）
+    # w 代表写、wb 代表写二进制文件、a 代表追加写
+    f = open(address, 'r')
+finally:
+    if f:
+        # 以字符串形式查看当前文件内容
+        print(f.read())
+        # 关闭文件
+        f.close()
+
+
+# 由于每次都要操作 close 关闭文件，会很繁琐，所以可以使用 with 帮助我们自定关闭文件
+with open(address, 'r') as f:
+    # 读取全部内容
+    print(f.read())
+    # 读取 100 字节的内容
+    print(f.read(100))
+    # 读取一行的内容
+    print(f.readline())
+    # 一次读取所有内容并以 list 形式返回
+    print(f.readlines())
+
+# 如果文件很小，read()一次性读取最方便；如果不能确定文件大小，反复调用read(size)比较保险；如果是配置文件，调用readlines()最方便
+
+# 字符编码，比如读取非UTF-8编码的文本文件，需要传递encoding='gbk'来选择对应的编码格式
+# errors='ignore'，代表遇到错误忽略
+f = open('...', 'r', encoding='gbk', errors='ignore')
+
+# 写文件，如果没有该文件会自动创建
+with open(text, 'w', encoding='utf-8') as f:
+    f.write('测试')
+
+```
+
+2. StringIO和BytesIO
+
+* StringIO：内存中读写str
+
+```python
+from io import StringIO
+
+f = StringIO()
+f.write('hello')
+f.write(' ')
+f.write('python')
+print(f.getvalue()) # hello python
+
+f = StringIO('123')
+print(f.read()) # 123
+
+```
+
+* BytesIO：内存中读写二进制数据
+
+```python
+from io import BytesIO
+f = BytesIO()
+f.write('哈喽'.encode('utf-8'))
+print(f.getvalue()) # b'\xe5\x93\x88\xe5\x96\xbd'
+
+f = BytesIO('哈喽'.encode('utf-8'))
+print(f.read()) # b'\xe5\x93\x88\xe5\x96\xbd'
+
+```
+
+3. 操作文件和目录
+
+```python
+# 操作系统类型
+print(os.name) # posix，说明系统是Linux、Unix或Mac OS X，如果是nt，就是Windows系统
+print(os.uname()) # 详细信息，windos 不支持
+print(os.environ) # 获取环境变量
+print(os.environ.get('PATH')) # 获取指定环境变量
+# 查看当前目录的绝对路径
+print(os.path.abspath('.')) # /Users/byron/Documents/dev/demo/pythondemo
+# 路径拼加
+print(os.path.join('/Users/byron/Desktop', 'byron')) # /Users/byron/Desktop/byron
+os.mkdir(os.path.join('/Users/byron/Desktop', 'byron')) # 创建文件，如果文件存在报错
+os.rmdir(os.path.join('/Users/byron/Desktop', 'byron')) # 删除文件
+# 拆分路径
+print(os.path.split('/Users/byron/Desktop/text.txt')) # ('/Users/byron/Desktop', 'text.txt')
+# 拆分后缀
+print(os.path.splitext('/Users/byron/Desktop/text.txt')) # ('/Users/byron/Desktop/text', '.txt')
+# 重命名
+os.rename('/Users/byron/Desktop/text.txt', '/Users/byron/Desktop/hah.py')
+# 删除文件
+os.remove('/Users/byron/Desktop/hah.py')
+# 查看当前是否为文件夹
+print(os.path.isdir('/Users/byron/Desktop')) # True
+# 查看当前是否为一个文件
+print(os.path.isfile('/Users/byron/Desktop/excel.js')) # True
+# 以 list 返回当前路径下的文件
+print(os.listdir('.'))
+
+```
+
+4. 序列化
+
+* pickle
+
+```python
+import pickle
+d = dict(name='Bob', age=20, score=88)
+print(d) # {'name': 'Bob', 'age': 20, 'score': 88}
+# pickle.dumps()方法把任意对象序列化成一个bytes
+print(pickle.dumps(d)) # b'\x80\x04\x95$\x...
+# pickle.loads()方法反序列化出对象
+print(pickle.loads(pickle.dumps(d))) # {'name': 'Bob', 'age': 20, 'score': 88}
+
+with open('/Users/byron/Desktop/a.txt', 'wb') as f:
+    # 将序列化二进制存入文件，注意这里是 dump
+    pickle.dump(d, f)
+
+with open('/Users/byron/Desktop/a.txt', 'rb') as f:
+    # 反序列化，注意这里是 load
+    c = pickle.load(f)
+    print(c) # {'name': 'Bob', 'age': 20, 'score': 88}
+
+```
+
+* json
+
+```python
+import json
+d = dict(name='Bob', age=20, score=88)
+# json.dumps 将dict转为str
+print(json.dumps(d), isinstance(json.dumps(d), str)) # {"name": "Bob", "age": 20, "score": 88} True
+json_str = json.dumps(d)
+# json.loads 将str转为dict
+print(json.loads(json_str), isinstance(json.loads(json_str), dict)) # {'name': 'Bob', 'age': 20, 'score': 88} True
+
+with open('/Users/byron/Desktop/a.json', 'w') as f:
+    json.dump(d, f)
+
+with open('/Users/byron/Desktop/a.json', 'r') as f:
+    c = json.load(f) # {'name': 'Bob', 'age': 20, 'score': 88}
+    print(c)
+
+
+# json 序列化类 第一种方法
+import json
+
+class Student(object):
+    def __init__(self, name, age, score):
+        self.name = name
+        self.age = age
+        self.score = score
+
+s = Student('Bob', 20, 88)
+
+# print(json.dumps(s)) # Object of type Student is not JSON serializable
+
+def student2dict(self):
+    return {
+        "name": self.name,
+        "age": self.age,
+        "score": self.score
+    }
+
+# 这样操作相当于把类先转成一个 dict，然后在 json 序列化
+print(json.dumps(s, default=student2dict)) # {"name": "Bob", "age": 20, "score": 88}
+
+
+# json 序列化类 第二种方法
+# 直接调用类的__dict__方法将类转化成一个dict
+print(json.dumps(s, default=lambda obj: obj.__dict__)) # {"name": "Bob", "age": 20, "score": 88}
+
+# json 反序列化为 类
+def dict2student(d):
+    return Student(d['name'], d['age'], d['score'])
+
+class_str =  json.dumps(s, default=student2dict) # 将类序列化为str
+class_dict = json.loads(class_str) # 将str反序列化为 dict
+# 将 dict 反序列化为 class
+print(dict2student(class_dict)) # <__main__.Student object at 0x10c1badc0>
+
+
+# json.dumps(obj, ensure_ascii=False) # ensure_ascii 是否将数据进行ascii化
+
+```
+
+
+## 进程和线程
