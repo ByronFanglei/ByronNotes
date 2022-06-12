@@ -1,11 +1,11 @@
 ## HTML部分
 
-### HTML常见的块级元素与行级元素
+### 1. HTML常见的块级元素与行级元素
 * 行级：不能设置宽高（内容撑开），水平排列【span，a，i，b，strong，em】
 * 块级：可以设置宽高，垂直排列，独占一行【div，p，ul，li，h1，ol】
 * 行内块：元素在一行显示，可以给行内块元素设置宽度和高度【input，img】
 * display：block，inline，inline-block	即可以设置宽高，又可以水平分布
-### HTML5 有哪些新特性？
+### 2. HTML5 有哪些新特性？
 * 不需要任何插件就可以实现动画，视频，图形等效果，替代flash插件
 * 声明方式
 >HTML4 规定了三种声明方式，分别是：严格模式Strict、过渡模式Transitional  和 框架集模式Frameset
@@ -23,7 +23,7 @@
 * Web Workers
 * websocket（不断开链接）很适合做网页版的聊天工具
 
-### HTML5 引入什么新的表单属性
+### 3. HTML5 引入什么新的表单属性
 * form：
 >autocomplete:属性规定表单是否应该启用自动完成功能  《form autocomplete="on|off"》
 >novalidate:如果使用该属性，则提交表单时不进行内容的验证	novalidate="novalidate"
@@ -38,25 +38,32 @@
 >required：规定必需在提交之前填写输入字段。 如果使用该属性，则字段是必填（或必选）的
 >step：为输入域规定合法的数字间隔。 如果 step=“3”，则合法的数是 -3,0,3,6 等
 
-### 与 HTML4 相比 HTML5 废弃了哪些元素
+### 4. 与 HTML4 相比 HTML5 废弃了哪些元素
 * basefont、big、center、font、s、strike、tt、u、frame、frameset、noframes
 
-###	如何处理 HTML5 新标签的浏览器兼容问题
+###	5. 如何处理 HTML5 新标签的浏览器兼容问题
 ```javascript
 <!--[if lt IE 9]>
 <script type="text/javascript" src="js/html5shiv.js"></script>
 <![endif]-->
 ```
 
-### URI与URL的区别
+### 6. URI与URL的区别
 * URI：统一资源标识符，标识一个资源
 * URL：统一资源定位器，就是一个具体的url
 * URL包含（协议，ip或域名，端口，目录，文件名）
 
 
 
-### 说说你对WebCodecs API的理解
+### 7. 说说你对WebCodecs API的理解
 
 * 允许 Web 程序对视频，音频进行进行编码的 API
 
 
+### 8. DOCTYPE 的作用是什么？
+
+    IE5.5 引入了文档模式的概念，而这个概念是通过使用文档类型（DOCTYPE）切换实现的。
+
+    <!DOCTYPE>声明位于 HTML 文档中的第一行，处于 <html> 标签之前。告知浏览器的解析器用什么文档标准解析这个文档。
+
+    DOCTYPE 不存在或格式不正确会导致文档以兼容模式呈现。

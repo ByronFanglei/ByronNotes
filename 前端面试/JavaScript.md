@@ -1,6 +1,8 @@
 ## JavaScript部分
 ### JavaScript 中有几种数据类型
-* 基本数据类型：String、Number、Boolean 、Undefined、Null、Symbol、BigInt ，Integer
+* 基本数据类型：String、Number、Boolean 、Undefined、Null、Symbol（es6）、BigInt（es10）
+  * Symbol：代表创建后独一无二且不可变的数据类型，它的出现我认为主要是为了解决可能出现的全局变量冲突的问题
+  * BigInt：是一种数字类型的数据，它可以表示任意精度格式的整数，使用 BigInt 可以安全地存储和操作大整数，即使这个数已经超出了 Number 能够表示的安全整数范围。
 * 引用数据类型：Object，其中Object可以分为：Array，Date 但是typeof可以识别出Function
 
 ### 查看数据类型
