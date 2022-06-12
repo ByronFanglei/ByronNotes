@@ -1822,6 +1822,114 @@ print(datetime.now() + timedelta(days=2, hours=2)) # 计算当前时间两天两
 
 2. collections：Python内建的一个集合模块，提供了许多有用的集合类
 
+* namedtuple：用来创建一个自定义的tuple对象，并且规定了tuple元素的个数，并可以用属性而不是索引来引用tuple的某个元素
+```python
+from collections import namedtuple
+
+Point = namedtuple('Point', ['x', 'y'])
+p = Point(100, 200)
+print(p.x, p.y) # 100 200
+print(isinstance(p, Point)) # True
+print(isinstance(p, tuple)) # True
+
+```
+
+* deque：可以高效实现插入和删除操作的双向列表，适合用于队列和栈
+
+```python
+from collections import deque
+
+d = deque(['a', 'b', 'c'])
+d.append('d') # 尾部插入一个元素
+d.appendleft('o') # 头部插入一个元素
+# d.pop() # 删除尾部一个元素
+# d.popleft() # 删除头部一个元素
+print(d) # deque(['o', 'a', 'b', 'c', 'd'])
+
+```
+
+* defaultdict：在使用dict时，如果引用的Key不存在，就会抛出KeyError。如果希望key不存在时，返回一个默认值，就可以用defaultdict
+
+```python
+from collections import defaultdict
+
+# 默认值是调用函数返回的，而函数在创建defaultdict对象时传入
+d = defaultdict(lambda: 'N/A')
+d['key1'] = 'key1'
+print(d['key1']) # key1
+print(d['key2']) # N/A
+
+```
+
+* OrderedDict：在使用dict时，Key是无序的。在对dict做迭代时，我们无法确定Key的顺序，如果需要保证key的顺序，可以使用OrderedDict, **OrderedDict的Key会按照插入的顺序排列，不是Key本身排序**
+
+```python
+from collections import OrderedDict
+
+# d = dict()
+# d['c'] = 1
+# d['a'] = 2
+# d['b'] = 3
+# for item, key in d.items():
+#     print(item, key)
+# 还不是很明白这个排序是有什么作用😱😱😱
+od = OrderedDict()
+od['c'] = 1
+od['a'] = 2
+od['b'] = 3
+print(od) # OrderedDict([('c', 1), ('a', 2), ('b', 3)])
+print(od.keys()) # odict_keys(['c', 'a', 'b'])
+
+```
+
+* ChainMap：可以把一组dict串起来并组成一个逻辑上的dict
+
+```python
+from collections import ChainMap
+import os, argparse
+
+# 构造缺省参数:
+defaults = {
+    'color': 'red',
+    'user': 'guest'
+}
+
+# 构造命令行参数: 可以在命令行添加参数 eg：python3 use_chainmap.py -u bob -c blue
+parser = argparse.ArgumentParser()
+parser.add_argument('-u', '--user')
+parser.add_argument('-c', '--color')
+namespace = parser.parse_args()
+command_line_args = {k: v for k, v in vars(namespace).items() if v}
+print(command_line_args)
+# 1.如果命令行没有输入那么打印出 {}
+# 2.如果命令行这样输入：python3 use_chainmap.py -u bob -c blue，那么打印出 {'user': 'byron', 'color': 'blue'}
+
+# 组合成ChainMap, 这里会先查看 command_line_args（命令行）的参数，然后在查看 os.environ（环境变量），最后在看默认参数
+combined = ChainMap(command_line_args, os.environ, defaults)
+
+# 打印参数:
+print('color=%s' % combined['color'], 'user=%s' % combined['user'])
+# 1. 如果直接运行：color=red user=guest
+# 2. 如果命令行构造参数运行 python3 inMode.py -u bob -c blue：color=blue user=bob
+# 3. 如果环境变量参数&命令行构造参数运行  user=admin color=blue python3 inMode.py -u bob ：color=blue user=bob
+
+```
+
+* Counter：一个简单的计数器，例如，统计字符出现的个数，厉害
+
+```python
+from collections import Counter
+
+c = Counter()
+for item in 'byronhellopython':
+    c[item] = c[item] + 1
+
+print(c) # Counter({'o': 3, 'y': 2, 'n': 2, 'h': 2, 'l': 2, 'b': 1, 'r': 1, 'e': 1, 'p': 1, 't': 1})
+
+```
+
+3. base64：是一种用64个字符来表示任意二进制数据的方法
+
 ```python
 
 ```
