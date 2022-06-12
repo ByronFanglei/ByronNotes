@@ -1545,3 +1545,283 @@ print(dict2student(class_dict)) # <__main__.Student object at 0x10c1badc0>
 
 
 ## 进程和线程
+
+* 进程：对于操作系统来说，一个任务就是一个进程（Process），比如打开一个浏览器就是启动一个浏览器进程，打开一个记事本就启动了一个记事本进程，打开两个记事本就启动了两个记事本进程，打开一个Word就启动了一个Word进程
+
+* 线程：有些进程还不止同时干一件事，比如Word，它可以同时进行打字、拼写检查、打印等事情。在一个进程内部，要同时干多件事，就需要同时运行多个“子任务”，我们把进程内的这些“子任务”称为线程（Thread）
+
+* 线程是最小的执行单元，而进程由至少一个线程组成。如何调度进程和线程，完全由操作系统决定，程序自己不能决定什么时候执行，执行多长时间。
+
+1. 多进程
+
+```python
+# 1. fork
+import os
+print('Process (%s) start...' % os.getpid())
+# 调用一次，返回两次，因为操作系统自动把当前进程（称为父进程）复制了一份（称为子进程），然后，分别在父进程和子进程内返回
+pid = os.fork()
+# fork出的子进程永远返回0，，父进程返回子进程的id
+if pid == 0:
+    print('我是子进程 (%s) 我的父进程为 %s.' % (os.getpid(), os.getppid()))
+else:
+    print('我是 (%s) 进程，创建了一个子进程 (%s).' % (os.getpid(), pid))
+
+
+# 2. 如果要启用大量子进程，可以用线程池的方法创建
+from multiprocessing import Pool
+import os, time, random
+
+def long_time_task(name):
+    print('Run task %s (%s)...' % (name, os.getpid()))
+    start = time.time()
+    time.sleep(random.random() * 3)
+    end = time.time()
+    print('Task %s runs %0.2f seconds.' % (name, (end - start)))
+
+if __name__=='__main__':
+    print('Parent process %s.' % os.getpid())
+    p = Pool(4)
+    for i in range(5):
+        p.apply_async(long_time_task, args=(i,))
+    print('Waiting for all subprocesses done...')
+    p.close()
+    p.join()
+    print('All subprocesses done.')
+
+# Pool对象调用join()方法会等待所有子进程执行完毕，调用join()之前必须先调用close()，调用close()之后就不能继续添加新的Process了
+
+
+# 3. 子进程，subprocess模块可以让我们非常方便地启动一个子进程，然后控制其输入和输出
+import subprocess
+
+print('$ nslookup www.fbyron.cn')
+r = subprocess.call(['nslookup', 'www.fbyron.cn'])
+print('Exit code:', r)
+
+
+# 4. 进程间通信
+from multiprocessing import Process, Queue
+import os, time, random
+
+# 写数据进程执行的代码:
+def write(q):
+    print('Process to write: %s' % os.getpid())
+    for value in ['A', 'B', 'C']:
+        print('Put %s to queue...' % value)
+        q.put(value)
+        time.sleep(random.random())
+
+# 读数据进程执行的代码:
+def read(q):
+    print('Process to read: %s' % os.getpid())
+    while True:
+        value = q.get(True)
+        print('Get %s from queue.' % value)
+
+if __name__=='__main__':
+    # 父进程创建Queue，并传给各个子进程：
+    q = Queue()
+    pw = Process(target=write, args=(q,))
+    pr = Process(target=read, args=(q,))
+    # 启动子进程pw，写入:
+    pw.start()
+    # 启动子进程pr，读取:
+    pr.start()
+    # 等待pw结束:
+    pw.join()
+    # pr进程里是死循环，无法等待其结束，只能强行终止:
+    pr.terminate()
+
+```
+
+2. 多线程
+
+```python
+# 1. 启动一个线程
+import time, threading
+
+# 新线程执行的代码:
+def loop():
+    print('thread %s is running...' % threading.current_thread().name)
+    n = 0
+    while n < 5:
+        n = n + 1
+        print('thread %s >>> %s' % (threading.current_thread().name, n))
+        time.sleep(1)
+    print('thread %s ended.' % threading.current_thread().name)
+
+# threading.current_thread() 返回主线程的实例
+print('thread %s is running...' % threading.current_thread().name) # MainThread 主线程的名字
+# 启动一个线程就是把一个函数传入并创建Thread实例，然后调用start()开始执行，name表示线程的名字
+t = threading.Thread(target=loop, name='LoopThread') #
+t.start()
+t.join()
+print('thread %s ended.' % threading.current_thread().name)
+
+
+# 多进程与多线程：在多进程中，同一个变量，各自会拷贝一份然后进行使用，互不影响；在多线程中，大家共享同一个变量，所以任何一个变量都有可能被任何一个线程所改变，还是很危险的，所以需要确保一个线程在修改变量时，其他的线程是不能修改的，可以通过 threading.Lock() 添加锁来实现
+
+import time, threading
+
+# 创建一个锁
+lock = threading.Lock()
+# 假定这是你的银行存款:
+balance = 0
+
+def change_it(n):
+    # 先存后取，结果应该为0:
+    global balance
+    balance = balance + n
+    balance = balance - n
+
+
+def run_thread(n):
+    for i in range(900000):
+        # 不加锁，理论上说实行完打印内容应该为0，但是不加锁很有可能不是0，可以试试看
+        # change_it(n)
+        # 添加锁
+        # 先要获取锁，当多个线程同时执行lock.acquire()时，只有一个线程能成功地获取锁，然后继续执行代码，其他线程就继续等待直到获得锁为止
+        lock.acquire()
+        try:
+            # 放心地改吧，这里 try 锁因为要保证之后一定要释放锁，不然后面的线程一直在等待就成了死线程
+            change_it(n)
+        finally:
+            # 改完了一定要释放锁:
+            lock.release()
+
+print(time.time())
+t1 = threading.Thread(target=run_thread, args=(5,))
+t2 = threading.Thread(target=run_thread, args=(8,))
+t1.start()
+t2.start()
+t1.join()
+t2.join()
+print(balance)
+print(time.time())
+
+```
+
+3. ThreadLocal：在多线程中优雅的创建全局数据
+
+```python
+import threading
+    
+# 创建全局ThreadLocal对象:
+local_school = threading.local()
+
+def process_student():
+    # 获取当前线程关联的student:
+    std = local_school.student
+    print('Hello, %s (in %s)' % (std, threading.current_thread().name))
+
+def process_thread(name):
+    # 绑定ThreadLocal的student:
+    local_school.student = name
+    process_student()
+
+t1 = threading.Thread(target= process_thread, args=('Alice',), name='Thread-A')
+t2 = threading.Thread(target= process_thread, args=('Bob',), name='Thread-B')
+t1.start()
+t2.start()
+t1.join()
+t2.join()
+
+# Hello, Alice (in Thread-A)
+# Hello, Bob (in Thread-B)
+
+```
+
+4. 分布式进程：https://www.liaoxuefeng.com/wiki/1016959663602400/1017631559645600
+
+
+## 正则匹配
+
+1. re模块：Python提供re模块，包含所有正则表达式的功能
+
+```python
+import re
+
+str = r'ABC\-001' # 建议字符串前面用 r 避免转义问题
+# re.match(正则表达式，字符串)
+print(re.match(r'^\d{3}\-\d{3,8}$', '123-12312311')) # <re.Match object; span=(0, 12), match='123-12312311'>
+print(re.match(r'^\d{3}\-\d{3,8}$', '0123-12312311')) # None
+
+```
+
+2. 切分字符串
+
+```python
+import re
+print('a b   c'.split(' ')) # ['a', 'b', '', '', 'c']
+print(re.split(r'\s+', 'a b   c')) # ['a', 'b', 'c']  可以过滤字符串的空格
+print(re.split(r'[\s\,\;]+', 'a,b  ;c;; d')) # ['a', 'b', 'c', 'd']
+
+```
+
+3. 分组
+
+```python
+import re
+m = re.match(r'^(\d{3})-(\d{3,8})$', '010-12345')
+print(m.groups()) # ('010', '12345')
+print(m[0]) # 010-12345
+print(m[1]) # 010
+print(m[2]) # 12345
+
+```
+
+4. 贪婪匹配
+
+```python
+# 由于 (\d+) 会尽可能的多匹配，所以会匹配全部字符串，导致 (0*) 没有内容可匹配
+print(re.match(r'^(\d+)(0*)$', '102300').groups()) # ('102300', '')
+# 我们使用 (\d+?) 采用非贪婪匹配，可以让 (0*) 有内容可以匹配
+print(re.match(r'^(\d+?)(0*)$', '102300').groups()) # ('1023', '00')
+
+```
+
+5. 编译，如果一个正则我们需要使用很多次，那么我们就可以使用预编译在进行使用，从而减少每次在使用过程中的编译问题
+
+```python
+import re
+# 预编译
+re_telephone = re.compile(r'^(\d{3})-(\d{3,8})$')
+# 使用
+print(re_telephone.match('010-12345').groups()) # ('010', '12345')
+
+```
+
+
+## 内建模块
+
+1. datetime：Python处理日期和时间的标准库
+
+```python
+from datetime import datetime, timedelta
+# 获取当前datetime
+print(datetime.now()) # 2022-06-12 16:29:40.682467
+print(type(datetime.now())) # <class 'datetime.datetime'>
+# 返回指定时间
+print(datetime(2022, 6, 12, 12, 20)) # 2022-06-12 12:20:00
+# 返回时间戳 秒
+print(datetime.now().timestamp(), datetime(2022, 6, 12, 12, 20).timestamp()) # 1655022894.105519 1655007600.0
+# 时间戳转时间
+print(datetime.fromtimestamp(1655022894.105519)) # 2022-06-12 16:34:54.105519
+# 转为 UTC 时间
+print(datetime.utcfromtimestamp(1655022894.105519)) # 2022-06-12 08:34:54.105519
+# str转换为datetime
+print(datetime.strptime('2022-6-1 18:19:59', '%Y-%m-%d %H:%M:%S')) # 2022-06-01 18:19:59
+# datetime转换为str
+print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), datetime.now().strftime('%a, %b %d %H:%M')) # 2022-06-12 16:42:15 Sun, Jun 12 16:42
+# datetime加减
+print(datetime.now() + timedelta(hours=2)) # 计算当前时间的两小时后
+print(datetime.now() + timedelta(days=2)) # 计算当前时间两天后
+print(datetime.now() + timedelta(days=2, hours=2)) # 计算当前时间两天两小时后
+
+```
+
+2. collections：Python内建的一个集合模块，提供了许多有用的集合类
+
+```python
+
+```
