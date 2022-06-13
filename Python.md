@@ -1931,5 +1931,21 @@ print(c) # Counter({'o': 3, 'y': 2, 'n': 2, 'h': 2, 'l': 2, 'b': 1, 'r': 1, 'e':
 3. base64：是一种用64个字符来表示任意二进制数据的方法
 
 ```python
+import base64
+
+# base64 编码
+print(base64.b64encode(b'binary\x00string')) # b'YmluYXJ5AHN0cmluZw=='
+# base64 解码
+print(base64.b64decode(b'YmluYXJ5AHN0cmluZw==')) # b'binary\x00string'
+
+# 由于标准的Base64编码后可能出现字符+和/，在URL中就不能直接作为参数，所以又有一种"url safe"的base64编码，其实就是把字符+和/分别变成-和_
+print(base64.b64encode(b'i\xb7\x1d\xfb\xef\xff')) # b'abcd++//'
+print(base64.urlsafe_b64decode(b'abcd++//')) # b'i\xb7\x1d\xfb\xef\xff'
+print(base64.urlsafe_b64encode(b'i\xb7\x1d\xfb\xef\xff')) # b'abcd--__'
+print(base64.urlsafe_b64decode(b'abcd--__')) # b'i\xb7\x1d\xfb\xef\xff'
+
+# Base64适用于小段内容的编码，比如数字证书签名、Cookie的内容等
 
 ```
+
+4. struct：处理bytes和其他二进制数据类型的转换
