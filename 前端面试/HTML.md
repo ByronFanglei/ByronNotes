@@ -5,6 +5,8 @@
 * 块级：可以设置宽高，垂直排列，独占一行【div，p，ul，li，h1，ol】
 * 行内块：元素在一行显示，可以给行内块元素设置宽度和高度【input，img】
 * display：block，inline，inline-block	即可以设置宽高，又可以水平分布
+
+
 ### 2. HTML5 有哪些新特性？
 * 不需要任何插件就可以实现动画，视频，图形等效果，替代flash插件
 * 声明方式
@@ -23,6 +25,7 @@
 * Web Workers
 * websocket（不断开链接）很适合做网页版的聊天工具
 
+
 ### 3. HTML5 引入什么新的表单属性
 * form：
 >autocomplete:属性规定表单是否应该启用自动完成功能  《form autocomplete="on|off"》
@@ -38,8 +41,10 @@
 >required：规定必需在提交之前填写输入字段。 如果使用该属性，则字段是必填（或必选）的
 >step：为输入域规定合法的数字间隔。 如果 step=“3”，则合法的数是 -3,0,3,6 等
 
+
 ### 4. 与 HTML4 相比 HTML5 废弃了哪些元素
 * basefont、big、center、font、s、strike、tt、u、frame、frameset、noframes
+
 
 ###	5. 如何处理 HTML5 新标签的浏览器兼容问题
 ```javascript
@@ -54,7 +59,6 @@
 * URL包含（协议，ip或域名，端口，目录，文件名）
 
 
-
 ### 7. 说说你对WebCodecs API的理解
 
 * 允许 Web 程序对视频，音频进行进行编码的 API
@@ -67,3 +71,37 @@
     <!DOCTYPE>声明位于 HTML 文档中的第一行，处于 <html> 标签之前。告知浏览器的解析器用什么文档标准解析这个文档。
 
     DOCTYPE 不存在或格式不正确会导致文档以兼容模式呈现。
+
+
+### 9. 标准模式与兼容模式各有什么区别?
+
+* 标准模式：渲染方式与js引擎解析都是按照最高标准进行的
+* 兼容模式：页面已宽松向后兼容方式显示，模拟老式浏览器行为以防止网站无法工作
+
+
+### 10. HTML5 为什么只需要写 <\!DOCTYPE HTML>，而不需要引入 DTD？
+* HTML5 不基于 SGML（标准通用标记语言），所以不用引入 DTD ，但是需要引入DOCTYPE来规范浏览器的行为，而 HTML4.01 基于 SGML ，所以需要对 DTD 进行引用，才能告知浏览器文档所使用的文档类型
+
+
+### SGML 、 HTML 、DTD、XML 和 XHTML 的区别？
+* SGML（Standard Generalized Markup language）是标准通用标记语言，是一种定义电子文档结构和描述其内容的国际标准语言，是所有电子文档标记语言的起源。
+
+* HTML（HyperText Markup Language）是超文本标记语言，主要是用于规定怎么显示网页。
+
+* DTD（ Document Type Definition 文档类型定义）是一组机器可读的规则，它们定义 XML 或 HTML 的特定版本中所有允许元素及它们的属性和层次关系的定义。在解析网页时，浏览器将使用这些规则检查页面的有效性并且采取相应的措施，DTD 是对 HTML 文档的声明，还会影响浏览器的渲染模式（工作模式）
+
+* XML（Extensible Markup Language）是可扩展标记语言是未来网页语言的发展方向，XML 和 HTML 的最大区别就在于 XML 的标签是可以自己创建的，数量无限多，
+而 HTML 的标签都是固定的而且数量有限。
+
+* XHTML（Extensible Hypertext Markup Language）也是现在基本上所有网页都在用的标记语言，他其实和 HTML 没什么本质的区别，标签都一样，用法也都一样，就是比 HTML 
+更严格，比如标签必须都用小写，标签都必须有闭合标签等。
+
+
+### 行内元素定义
+
+    元素被分为行内元素（inline）和 块元素（block），一个行内元素只占据它对应标签的的边框所包含的空间，常见的行内元素有 a b span img strong sub sup button input label select textarea
+
+
+### 块级元素定义
+    块级元素占据父容器的整个宽度，因此创建了一个块
+    常见的块级元素有  div ul ol li dl dt dd h1 h2 h3 h4 h5 h6 p 

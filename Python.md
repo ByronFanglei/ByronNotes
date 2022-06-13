@@ -1949,3 +1949,40 @@ print(base64.urlsafe_b64decode(b'abcd--__')) # b'i\xb7\x1d\xfb\xef\xff'
 ```
 
 4. struct：处理bytes和其他二进制数据类型的转换
+
+```python
+import struct
+# pack函数把任意数据类型变成bytes，'>I'：>表示字节顺序是big-endian，也就是网络序，I表示4字节无符号整数，后面的参数个数要和处理指令一致
+print(struct.pack('>I', 10240099)) # b'\x00\x9c@c'
+# unpack把bytes变成相应的数据类型，'>IH'：后面的bytes依次变为I：4字节无符号整数和H：2字节无符号整数
+print(struct.unpack('>IH', b'\xf0\xf0\xf0\xf0\x80\x80')) # (4042322160, 32896)
+
+```
+
+5. hashlib：提供了常见的摘要算法（哈希算法、散列算法），如MD5，SHA1等等
+
+```python
+import hashlib
+
+md5 = hashlib.md5()
+
+md5.update('hello'.encode('utf-8'))
+print(md5.hexdigest()) # 5d41402abc4b2a76b9719d911017c592
+
+# 如果把内容拆开再去 md5 拿到的值也是一样的
+md5.update('hel'.encode('utf-8'))
+md5.update('lo'.encode('utf-8'))
+print(md5.hexdigest()) # 5d41402abc4b2a76b9719d911017c592
+
+sha1 = hashlib.sha1()
+
+sha1.update('hello'.encode('utf-8'))
+print(sha1.hexdigest()) # aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
+
+sha1.update('hel'.encode('utf-8'))
+sha1.update('lo'.encode('utf-8'))
+print(sha1.hexdigest()) # aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
+
+```
+
+6. hmac：实现了标准的Hmac算法
