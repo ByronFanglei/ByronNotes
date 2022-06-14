@@ -1986,3 +1986,274 @@ print(sha1.hexdigest()) # aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
 ```
 
 6. hmac：实现了标准的Hmac算法
+
+```python
+import hmac
+
+message = b'Hello, world!'
+key = b'secret'
+# 传入的key和message都是bytes类型
+h = hmac.new(key, message, digestmod='MD5')
+print(h.hexdigest()) # fa4ee7d173f2d97ee79022d1a7355bcf
+
+```
+
+7. itertools：提供了非常有用的用于操作迭代对象的函数
+
+```python
+import itertools
+
+# count 创建一个无限迭代器，会打印出所有的自然序列, 第一个参数为开始数子，第二个为间隔
+natuals = itertools.count(1, 2)
+for item in natuals:
+    print(item)
+
+# takewhile 可以根据条件判断截取出来一个有限的序列
+ns = itertools.takewhile(lambda x: x <= 10, natuals)
+print(list(ns)) # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# cycle 创建一个无限迭代器，将传入内容无限打印下去
+cs = itertools.cycle('abc')
+for item in cs:
+    print(item)
+
+# repeat 可以把一个元素无限重复下去，第二个参数是重复次数
+re = itertools.repeat('byron', 10)
+for item in re:
+    print(item)
+
+# chain 可以将一组迭代对象串联起来，形成一个更大的迭代器
+ch = itertools.chain('ABC', 'DEF', 'GHI')
+for item in ch:
+    print(item) # A B C D E F G H I
+
+# groupby 把迭代器中相邻的重复元素挑出来放在一起，第一个参数为重复的元素，第二个参数为一个函数来处理第一个元素
+gr = itertools.groupby('AAAbBBBCccCAAAaa', lambda c: c.upper())
+for k, v in gr:
+    print(k, list(v))
+    # A['A', 'A', 'A']
+    # B['b', 'B', 'B', 'B']
+    # C['C', 'c', 'c', 'C']
+    # A['A', 'A', 'A', 'a', 'a']
+
+```
+
+8. contextlib：上下文
+
+```python
+# with 并不是只有在用 open 的时候可以使用，实际上，任何对象，只要正确实现了上下文管理，就可以用于with语句
+# 实现上下文管理是通过__enter__和__exit__这两个方法实现的
+
+class Query(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __enter__(self):
+        print('Begin')
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            print('Error')
+        else:
+            print('END')
+
+    def query(self):
+        print('this is name %s' %self.name)
+
+with Query('byron') as q:
+    q.query()
+    
+# Begin
+# this is name byron
+# END
+
+
+# 也可以使用 contextmanager 装饰器，更方便一点，而且我们有时候需要在指定代码前后打印内容，也可以使用这个装饰器
+# @contextmanager这个decorator接受一个generator，用yield语句把with ... as var把变量输出出去，然后，with语句就可以正常地工作了
+from contextlib import contextmanager
+
+class Query(object):
+    def __init__(self, name):
+        self.name = name
+
+    def query(self):
+        print('this is name %s' %self.name)
+
+@contextmanager
+def create_query(name):
+    print('Begin')
+    q = Query(name)
+    yield q
+    print('End')
+
+with create_query('byron') as q:
+    q.query()
+
+# Begin
+# this is name byron
+# End
+
+# 这是一个在指定代码片段前后打印出内容的例子
+@contextmanager
+def tag(tag):
+    print("<%s>" % tag)
+    yield
+    print("</%s>" % tag)
+
+with tag('html'):
+    print('start')
+    print('end')
+
+# <html>
+# start
+# end
+# </html>
+
+
+# @closing 如果一个对象没有实现上下文，我们就不能把它用于with语句。这个时候，可以用closing()来把该对象变为上下文对象
+from contextlib import closing
+from urllib.request import urlopen
+
+with closing(urlopen('http://www.fbyron.cn')) as page:
+    for line in page:
+        print(line)
+
+```
+
+9. urllib：提供了一系列用于操作URL的功能
+
+```python
+from urllib import request, parse
+
+# GET 请求
+    # 直接抓取页面
+with request.urlopen('https://react.docschina.org/') as f:
+    data = f.read()
+    print('Status:', f.status)
+    print('Reason:', f.reason)
+    for k, v in f.getheaders():
+        print('%s: %s' % (k, v))
+    print('Data:', data.decode('utf-8'))
+
+    # 添加请求头抓去页面
+req = request.Request('https://react.docschina.org/')
+req.add_header('User-Agent', 'Mozilla/6.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/8.0 Mobile/10A5376e Safari/8536.25')
+with request.urlopen(req) as f:
+    data = f.read()
+    print('Status:', f.status)
+    print('Reason:', f.reason)
+    for k, v in f.getheaders():
+        print('%s: %s' % (k, v))
+    print('Data:', data.decode('utf-8'))
+
+
+# POST 请求，需要把参数data以bytes形式传入
+
+    # 输入信息
+email = input('Email: ')
+passwd = input('Password: ')
+    # 对信息进行bytes化
+login_data = parse.urlencode([
+    ('username', email),
+    ('password', passwd),
+    ('entry', 'mweibo'),
+    ('client_id', ''),
+    ('savestate', '1'),
+    ('ec', ''),
+    ('pagerefer', 'https://passport.weibo.cn/signin/welcome?entry=mweibo&r=http%3A%2F%2Fm.weibo.cn%2F')
+])
+    # 设置请求地址
+req = request.Request('https://passport.weibo.cn/sso/login')
+    # 添加请求头
+req.add_header('Origin', 'https://passport.weibo.cn')
+req.add_header('User-Agent', 'Mozilla/6.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/8.0 Mobile/10A5376e Safari/8536.25')
+req.add_header('Referer', 'https://passport.weibo.cn/signin/login?entry=mweibo&res=wel&wm=3349&r=http%3A%2F%2Fm.weibo.cn%2F')
+    # 开启请求
+with request.urlopen(req, data=login_data.encode('utf-8')) as f:
+    print('Status:', f.status, f.reason)
+    for k, v in f.getheaders():
+        print('%s: %s' % (k, v))
+    print('Data:', f.read().decode('utf-8'))
+
+
+# 通过代理进行请求地址
+proxy_handler = request.ProxyHandler({'http': 'http://www.example.com:3128/'})
+proxy_auth_handler = request.ProxyBasicAuthHandler()
+proxy_auth_handler.add_password('realm', 'host', 'username', 'password')
+opener = request.build_opener(proxy_handler, proxy_auth_handler)
+with opener.open('http://www.example.com/login.html') as f:
+    pass
+
+```
+
+10. XML
+* 操作XML有两种方法：DOM和SAX。DOM会把整个XML读入内存，解析为树，因此占用内存大，解析慢，优点是可以任意遍历树的节点。SAX是流模式，边读边解析，占用内存小，解析快，缺点是我们需要自己处理事件，正常情况下，优先考虑SAX，因为DOM实在太占内存
+
+```python
+from xml.parsers.expat import ParserCreate
+
+class DefaultSaxHandler(object):
+    # start_element事件，在读取<a href="/">时；
+    def start_element(self, name, attrs):
+        print('start_element: %s, attrs: %s' % (name, str(attrs)))
+
+    # end_element事件，在读取</a>时
+    def end_element(self, name):
+        print('end_element: %s' % name)
+
+    # char_data事件，在读取python时
+    def char_data(self, text):
+        print('char_data: %s' % text)
+
+xml = r'''<?xml version="1.0"?>
+<a href="/">python</a>
+'''
+
+handler = DefaultSaxHandler()
+parser = ParserCreate()
+parser.StartElementHandler = handler.start_element
+parser.EndElementHandler = handler.end_element
+parser.CharacterDataHandler = handler.char_data
+print(parser.Parse(xml))
+
+```
+
+11. HTMLParser：继续HTMl
+
+```python
+from html.parser import HTMLParser
+from html.entities import name2codepoint
+
+class MyHTMLParser(HTMLParser):
+
+    def handle_starttag(self, tag, attrs):
+        print('开始标签：<%s>' % tag)
+
+    def handle_endtag(self, tag):
+        print('结束标签：</%s>' % tag)
+
+    def handle_startendtag(self, tag, attrs):
+        print('<%s/>' % tag)
+
+    def handle_data(self, data):
+        print('内容：',data)
+
+    def handle_comment(self, data):
+        print('注释信息：<!--', data, '-->')
+
+    def handle_entityref(self, name):
+        print('&%s;' % name)
+
+    def handle_charref(self, name):
+        print('&#%s;' % name)
+
+parser = MyHTMLParser()
+parser.feed('''<html>
+<head></head>
+<body>
+<!-- test html parser -->
+    <p>Some <a href=\"#\">html</a> HTML&nbsp;tutorial...<br>END</p>
+</body></html>''')
+
+```
