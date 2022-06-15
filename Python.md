@@ -1792,7 +1792,7 @@ print(re_telephone.match('010-12345').groups()) # ('010', '12345')
 ```
 
 
-## 内建模块
+## 常用模块
 
 1. datetime：Python处理日期和时间的标准库
 
@@ -2255,5 +2255,74 @@ parser.feed('''<html>
 <!-- test html parser -->
     <p>Some <a href=\"#\">html</a> HTML&nbsp;tutorial...<br>END</p>
 </body></html>''')
+
+```
+
+12. Pillow：一个操纵图像的库
+
+```python
+from PIL import Image, ImageFilter
+
+# 操纵图像：https://pillow-zh-cn.readthedocs.io/zh_CN/latest/handbook/tutorial.html
+# 打开图片
+im = Image.open('/Users/byron/Desktop/123.jpeg')
+# 获取图片的宽，高
+w, h = im.size
+print('原始图片的宽：%s，高：%s' %(w, h))
+# 缩放 50%
+im.thumbnail((w // 2, h // 2))
+ww, hh = im.size
+print('缩放后图片的宽：%s，高：%s' %(ww, hh))
+# 将图片进行模糊滤镜
+im2 = im.filter(ImageFilter.BLUR)
+# 把缩放后的图像用jpeg格式保存，默认会覆盖之前的
+im2.save('/Users/byron/Desktop/thumbnail.jpeg', 'jpeg')
+# 展示图像
+im.show()
+
+
+# 绘图方式
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+import random
+
+# 绘图方式
+# 随机字母
+def randomFont():
+    # random.randint(65, 90)：生成65 - 90 随机一个数字
+    # chr 将编码转换为对应的字符
+    return chr(random.randint(65, 90))
+
+# 随机颜色
+def randomColor():
+    return (random.randint(56, 255), random.randint(56, 255), random.randint(56, 255))
+
+def randomColor2():
+    return (random.randint(32, 127), random.randint(32, 127), random.randint(32, 127))
+
+# 设置宽高
+width = 60 * 4
+height = 60
+img = Image.new('RGB', (width, height), (255, 255, 255))
+# 创建font对象
+font = ImageFont.truetype('/Users/byron/Desktop/HYTianZhenTi.ttf', 36)
+# 创建Draw对象:
+draw = ImageDraw.Draw(img)
+# 填充每个像素:
+for x in range(width):
+    for y in range(height):
+        draw.point((x, y), fill=randomColor())
+# 输出文字:
+for t in range(4):
+    draw.text((60 * t + 10, 10), randomFont(), font=font, fill=randomColor2())
+# 模糊:
+image = img.filter(ImageFilter.BLUR)
+image.save('/Users/byron/Desktop/code.jpg', 'jpeg')
+
+```
+
+13. requests：一个用于网络请求的库
+
+```python
+
 
 ```
