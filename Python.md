@@ -2323,6 +2323,279 @@ image.save('/Users/byron/Desktop/code.jpg', 'jpeg')
 13. requests：一个用于网络请求的库
 
 ```python
+import requests
 
+# GET 请求
+r = requests.get('https://google.com')
+    # 返回状态码
+print(r.status_code)
+    # 返回response内容
+print(r.text)
+
+
+    # 添加参数，传入一个dict作为params参数
+r = requests.get('https://www.douban.com/search', params={'q': 'python', 'cat': '1001'})
+#     # 请求地址
+print(r.url) # https://www.douban.com/search?q=python&cat=1001
+    # 检查编码
+print(r.encoding)
+
+# POST 请求
+r = requests.post('https://accounts.douban.com/login', data={'form_email': 'abc@example.com', 'form_password': '123456'})
+    # requests默认使用application/x-www-form-urlencoded对POST数据编码。如果要传递JSON数据，可以直接传入json参数
+params = {'key': 'value'}
+r = requests.post('https://accounts.douban.com/login', json=params) # 内部自动序列化为JSON
+    # 读取文件
+upload_files = {'file': open('report.xls', 'rb')}
+cs = {'token': '12345', 'status': 'working'}
+r = requests.post('https://accounts.douban.com/login', files=upload_files, cookies=cs, timeout=2.5) # 2.5秒后超时
+
+    # 获取响应头
+print(r.headers)
+    # 获取cookie
+print(r.cookies['ts'])
 
 ```
+
+14. chardet：检测编码格式
+
+```python
+import chardet
+
+# encoding：当前编码格式，confidence：当前检测概率，1.0 表示100%，language：代表当前语言
+print(chardet.detect(b'Hello, world!')) # {'encoding': 'ascii', 'confidence': 1.0, 'language': ''}
+data = '离离原上草，一岁一枯荣'.encode('gbk')
+print(chardet.detect(data)) # {'encoding': 'GB2312', 'confidence': 0.7407407407407407, 'language': 'Chinese'}
+data1 = b'\xc0\xeb\xc0\xeb\xd4\xad\xc9\xcf\xb2\xdd\xa3\xac\xd2\xbb\xcb\xea\xd2\xbb\xbf\xdd\xc8\xd9'
+print(chardet.detect(data1)) # {'encoding': 'GB2312', 'confidence': 0.7407407407407407, 'language': 'Chinese'}
+
+```
+
+15. psutil：支持跨平台获取系统信息
+https://github.com/giampaolo/psutil
+
+```python
+import psutil
+
+# CPU逻辑数量
+print(psutil.cpu_count()) # 8
+# CPU物理核心
+print(psutil.cpu_count(logical=False)) # 4
+# 统计CPU的用户／系统／空闲时间
+print(psutil.cpu_times()) # scputimes(user=130702.38, nice=0.0, system=103135.14, idle=969344.99)
+
+for item in range(10):
+    # cpu 使用频率
+    print(psutil.cpu_percent(interval=1, percpu=True))
+
+# 获取 ROM
+print(psutil.virtual_memory()) # svmem(total=17179869184, available=5142548480, percent=70.1, used=8856158208, free=124866560, active=5020307456, inactive=4997808128, wired=3835850752)
+# 获取 RAM
+print(psutil.swap_memory()) # sswap(total=4294967296, used=3976986624, free=317980672, percent=92.6, sin=52030672896, sout=2285604864)
+
+# 获取磁盘信息
+print(psutil.disk_partitions())
+# 获取磁盘使用情况
+print(psutil.disk_usage('/')) # sdiskusage(total=499963174912, used=260722843648, free=239240331264, percent=52.1)
+# 磁盘IO
+print(psutil.disk_io_counters()) # sdiskio(read_count=9349583, write_count=7125064, read_bytes=196497158144, write_bytes=179151810560, read_time=6873642, write_time=2788507)
+
+# 获取网络读写字节／包的个数
+print(psutil.net_io_counters()) # snetio(bytes_sent=6174398464, bytes_recv=6251361280, packets_sent=8622716, packets_recv=17914967, errin=0, errout=16921, dropin=0, dropout=0)
+# 获取网络接口信息
+print(psutil.net_if_addrs())
+# 获取网络接口状态
+print(psutil.net_if_stats())
+# 获取当前网络连接信息
+print(psutil.net_connections())
+
+# 获取进程信息
+print(psutil.pids())
+
+# 获取指定进行
+p = psutil.Process(3776)
+# 进程名称
+print(p.name()) # akd
+# 进程路径
+print(p.exe()) # ...
+# 进程工作目录
+print(p.cwd())
+...
+
+```
+
+
+## virtualenv
+* virtualenv就是用来为一个应用创建一套“隔离”的Python运行环境
+
+
+## 网络编程
+
+1. TCP编程：TCP是建立可靠连接，并且通信双方都可以以流的形式发送数据
+
+* 客服端socket
+```python
+import socket
+# 创建一个客户端socket:
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 建立链接
+s.connect(('www.fbyron.cn', 80))
+# 发送数据:
+s.send(b'GET / HTTP/1.1\r\nHost: www.sina.com.cn\r\nConnection: close\r\n\r\n')
+# 接收数据:
+buffer = []
+while True:
+    # 每次最多接收1k字节:
+    d = s.recv(1024)
+    if d:
+        buffer.append(d)
+    else:
+        break
+data = b''.join(buffer)
+
+# 关闭连接:
+s.close()
+
+header, html = data.split(b'\r\n\r\n', 1)
+print(header.decode('utf-8'))
+# 将html存入本地
+with open('/Users/byron/Desktop/s.html', 'wb') as f:
+    f.write(html)
+
+```
+
+* 服务端socket，可以把一下两段代码放到不同文件然后跑起来看看效果
+```python
+import socket, threading, time
+# 创建一个服务端socket:
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 监听端口
+s.bind(('127.0.0.1', 9999))
+# 设置等待连接的最大数量
+s.listen(5)
+print('Waiting for connection...')
+
+def tcplink(sock, addr):
+    print('Accept new connection from %s:%s...' % addr)
+    sock.send(b'Welcome!')
+    while True:
+        data = sock.recv(1024)
+        time.sleep(1)
+        if not data or data.decode('utf-8') == 'exit':
+            break
+        sock.send(('Hello, %s!' % data.decode('utf-8')).encode('utf-8'))
+    sock.close()
+    print('Connection from %s:%s closed.' % addr)
+
+while True:
+    # 接受一个新连接:
+    sock, addr = s.accept()
+    # 创建新线程来处理TCP连接:
+    t = threading.Thread(target=tcplink, args=(sock, addr))
+    t.start()
+
+#-------------------------------------------
+
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 建立连接:
+s.connect(('127.0.0.1', 9999))
+# 接收欢迎消息:
+print(s.recv(1024).decode('utf-8'))
+for data in [b'Michael', b'Tracy', b'Sarah']:
+    # 发送数据:
+    s.send(data)
+    print(s.recv(1024).decode('utf-8'))
+s.send(b'exit')
+s.close()
+
+```
+
+2. UDP编程：UDP是面向无连接的协议
+
+```python
+import socket
+# 服务端
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# 绑定端口:
+s.bind(('127.0.0.1', 9999))
+print('Bind UDP on 9999...')
+while True:
+    # 接收数据:
+    data, addr = s.recvfrom(1024)
+    print('Received from %s:%s.' % addr)
+    # 向客户端发送数据
+    s.sendto(b'Hello, %s!' % data, addr)
+
+# --------------------------------------------
+
+import socket
+# 客户端
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+for data in [b'Michael', b'Tracy', b'Sarah']:
+    # 发送数据:
+    s.sendto(data, ('127.0.0.1', 9999))
+    # 接收数据:
+    print(s.recv(1024).decode('utf-8'))
+s.close()
+
+```
+
+
+## Web开发
+
+1. WSGI接口：Web Server Gateway Interface
+
+```python
+# 从wsgiref模块导入:
+from wsgiref.simple_server import make_server
+
+def application(environ, start_response):
+    start_response('200 OK', [('Content-Type', 'text/html')])
+    body = '<h1>Hello, %s!</h1>' % (environ['PATH_INFO'][1:] or 'web')
+    return [body.encode('utf-8')]
+
+# 创建一个服务器，IP地址为空，端口是8000，处理函数是application:
+httpd = make_server('', 8000, application)
+print('Serving HTTP on port 8000...')
+# 开始监听HTTP请求:
+httpd.serve_forever()
+
+```
+
+2. flask
+
+```python
+from flask import Flask
+from flask import request
+
+app = Flask(__name__)
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    return '<h1>Home</h1>'
+
+@app.route('/signin', methods=['GET'])
+def signin_form():
+    return '''<form action="/signin" method="post">
+              <p><input name="username"></p>
+              <p><input name="password" type="password"></p>
+              <p><button type="submit">Sign In</button></p>
+              </form>'''
+
+@app.route('/signin', methods=['POST'])
+def signin():
+    # 需要从request对象读取表单内容：
+    if request.form['username']=='admin' and request.form['password']=='password':
+        return '<h3>Hello, admin!</h3>'
+    return '<h3>Bad username or password.</h3>'
+
+if __name__ == '__main__':
+    app.run()
+
+```
+
+
+## 异步IO
+
+1. 
