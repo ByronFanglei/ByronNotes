@@ -2598,4 +2598,100 @@ if __name__ == '__main__':
 
 ## 异步IO
 
-1. 
+1. 协程/微线程：一般来说子程序是顺序调用的，A -> B -> C -> B -> A 完成一次调用，但是协程执行中的子程序是可以中断的，然后转而执行别的子程序，在适当的时候再返回来接着执行，有点类似于线程的切换，但是要比线程快很多，因为子程序不是线程切换，而是程序自身控。
+
+```python
+# Python对协程的支持是通过generator实现的
+def consumer():
+    r = ''
+    while True:
+        n = yield r
+        if not n:
+            return
+        print('[CONSUMER] Consuming %s...' % n)
+        r = '200 OK'
+
+def product(c):
+    # 这里相当于启动生成器，调用send（None）完全等同于调用生成器的next（）方法
+    c.send(None)
+    n = 0
+    while n < 3:
+        n = n + 1
+        print('[PRODUCER] Producing %s...' % n)
+        r = c.send(n)
+        print('[PRODUCER] Consumer return: %s' % r)
+    c.close()
+
+c = consumer()
+product(c)
+
+```
+
+2. asyncio：实现单线程并发IO操作
+
+```python
+# asyncio
+import asyncio
+
+async def hello():
+    print('Hello')
+    r = await asyncio.sleep(1)
+    print("Hello again!")
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(hello())
+loop.close()
+
+```
+
+3. aiohttp：asyncio实现了TCP、UDP、SSL等协议，aiohttp则是基于asyncio实现的HTTP框架
+
+```python
+import asyncio
+from aiohttp import web
+
+async def index(request):
+    await asyncio.sleep(0.5)
+    return web.Response(body=b'<h1>Index</h1>', content_type='text/html')
+
+
+async def home(request):
+    await asyncio.sleep(0.5)
+    text = '<h1>hello %s<h1>' % request.match_info['name']
+    return web.Response(body=text.encode('utf-8'), content_type='text/html')
+
+
+async def init(loop):
+    app = web.Application(loop=loop)
+    app.router.add_route('GET', '/', index)
+    app.router.add_route('GET', '/home/{name}', home)
+    srv = await loop.create_server(app.make_handler(), '127.0.0.1', '9998')
+    print('Server started at http://127.0.0.1:9998...')
+    return srv
+
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(init(loop))
+loop.run_forever()
+
+```
+
+
+## virtualenv
+* 目的是为了分离环境，让不同项目都在自己虚拟环境内安装包等
+
+```shell
+# 安装
+pip3 install virtualenv
+
+# 在项目目录下，然后就会发现项目目录生成了venv文件
+virtualenv venv
+
+# mac 下使用source进入当前环境
+source venv/bin/activate
+# 执行上述命令会发现当前控制台为 (venv) ➜  pythonWebApp，这样我们安装就会在当前的项目中了
+
+# 退出当前环境到全局python环境
+deactivate
+
+```
