@@ -1053,3 +1053,135 @@ console.log(Animal.foo) // Function
 #1:使用POST接口
 #2:增加验证，例如密码，短信验证，指纹，人脸识别
 ```
+
+
+### 什么是堆？什么是栈？它们之间有什么区别和联系？
+堆和栈的概念存在于数据结构中和操作系统内存中
+
+* 在数据结构中，栈中的数据是先进后出，堆是一个优先队列，是按照优先级来进行排列的，优先级可以按照大小来规定
+
+* 在操作系统中，栈内存由编译器自动分配释放，存放函数的参数值，局部变量的值等。其操作方式类似于数据结构中的栈，堆内存一般由个人释放，如果没有释放在程序结束时可能由垃圾回收机制回收
+
+
+### 内部属性 [[Class]] 是什么
+所有 type 返回 object 的对象内部都有一个 [[Class]] 的属性，这个属性一般是无法直接访问的，需要使用 Object.prototype.toString 来查看
+
+```javascript
+Object.prototype.toString.call([]) // '[object Array]'
+
+class a {}
+aa = new a()
+Object.prototype.toString.call(aa) // '[object Object]'
+
+// 我们自己创建的类使用 toString 就找不到对应的类型，因为 toString 找不到 toStringTag 所以返回的 Object
+
+class b {
+  get [Symbol.toStringTag]() {
+    return "classB"
+  }
+}
+bb = new b()
+Object.prototype.toString.call(bb) // '[object classB]'
+
+```
+
+### 介绍 js 有哪些内置对象（全局的对象）?
+
+js 中的内置对象主要指的是在程序执行前存在全局作用域里的由 js 定义的一些全局值属性、函数和用来实例化其他对象的构造函
+数对象
+
+这里所说的全局的对象不是我们自定义的 global 的对象，而是 js 的全局的对象
+
+* 值属性：这些全局的属性返回一个简单的值，没有自己的属性方法，比如，Infinity、NaN、undefined、null
+
+* 函数属性：全局函数可以直接调用的，不需要在调用的时候指定对象，并将返回值返回调用者，比如：eval()、parseFloat()、parseInt()
+
+* 基本对象：基本对象是定义或使用其他对象的基础，比如：Object、Function、Boolean、Symbol、Error
+
+* 工具类的对象：比如，Number、Math、Date
+
+* 字符串对象：比如，String、RegExp
+
+* 可索引的集合对象，也就是我们所说的数组，Array
+
+* 键值对集合对象，也就是 key value 类型的，比如，Map、Set、WeakMap、WeakSet
+
+* 矢量集合，SIMD 矢量集合中的数据会被组织为一个数据序列
+
+* 结构话数据，这些对象用来表示和操作结构化的缓冲区数据，或使用 JSON 编码的数据，比如，JSON
+
+* 控制抽象对象：比如，Promise、Generator
+
+* 反射：比如，Reflect、Proxy
+
+* 国际化：为了支持多语言处理而加入 ECMAScript 的对象，比如，Intl、Intl.Collator
+
+* WebAssembly
+
+* arguments
+
+
+### undefined 与 undeclared 的区别
+
+已经在作用域中声明但是未赋值的变量为 undefined，相反，没有在作用域中声明就使用的变量是undeclared（未声明的）
+
+对于 undeclared 变量的引用，浏览器会报引用错误，如 ReferenceError: xxx is not defined, 但是我们可以使用 typeof 的安全防范机制来避免报错，因为对于 undeclared（或者 not defined ）变量，typeof 会返回 "undefined"
+
+
+### null 和 undefined 的区别
+
+undefined 与 null 都是基本数据类型
+
+undefined 代表已声明但未赋值的变量，null 代表的是一个空对象，一般变量已声明未赋值会返回 undefined，null 主要用于赋值给可能返回对象的变量来做初始值
+
+undefined 在 js 中不是一个保留字，这意味着我们可以使用 undefined 来作为一个变量名，这样的做法是非常危险的，它
+会影响我们对 undefined 值的判断。但是我们可以通过一些方法获得安全的 undefined 值，比如说 void 0
+
+```javascript
+function a () {
+  // 如果一个作用域内声明了 undefined 变量，那么就很危险了
+  const undefined = 123
+  console.log(undefined) // 123
+}
+console.log(undefined) // undefined
+
+```
+
+当我们对两种类型使用 typeof 进行判断的时候，Null 类型化会返回 “object”，这是一个历史遗留的问题。当我们使用双等
+号对两种类型的值进行比较时会返回 true，使用三个等号时会返回 false
+
+```javascript
+null == undefined // true
+null === undefined // false
+
+```
+
+
+### 如何获取安全的 undefined 值
+
+我们可以使用 void xxx，一般都是用 void 0 来获取安全的 undefined
+
+```javascript
+void 0 // undefined
+void 1 // undefined
+
+```
+
+
+### 说几条写 JavaScript 的基本规范
+
+* if 、for 语句必须使用大括号
+
+* switch 必须有 default 分支
+
+* 进行比较时使用全等
+
+* 不要使用魔法数字，尽可能使用枚举
+
+* 变量使用 let const，少使用 var
+
+* 不要在内置对象的原型上添加方法，如 Array, Date
+
+
+### JavaScript 原型，原型链？ 有什么特点
+

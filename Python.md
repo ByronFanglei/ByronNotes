@@ -2172,6 +2172,7 @@ req.add_header('Referer', 'https://passport.weibo.cn/signin/login?entry=mweibo&r
     # 开启请求
 with request.urlopen(req, data=login_data.encode('utf-8')) as f:
     print('Status:', f.status, f.reason)
+    # f.getheaders()获取状态信息 list
     for k, v in f.getheaders():
         print('%s: %s' % (k, v))
     print('Data:', f.read().decode('utf-8'))
@@ -2184,6 +2185,16 @@ proxy_auth_handler.add_password('realm', 'host', 'username', 'password')
 opener = request.build_opener(proxy_handler, proxy_auth_handler)
 with opener.open('http://www.example.com/login.html') as f:
     pass
+
+
+# 下载，可以下载网页，图片，视频
+res = request.urlretrieve('http://www.baidu.com', 'baidu.html')
+
+# parse.quote('周杰伦') 将字符转换为unicode
+with request.urlopen('http://www.baidu.com/s?wd=%s' %parse.quote('周杰伦')) as f:
+    data = f.read()
+    print(data.decode('utf-8'))
+    print(f.geturl()) # http://www.baidu.com/s?wd=%E5%91%A8%E6%9D%B0%E4%BC%A6
 
 ```
 
