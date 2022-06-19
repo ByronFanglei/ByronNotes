@@ -2686,6 +2686,8 @@ pip3 install virtualenv
 
 # 在项目目录下，然后就会发现项目目录生成了venv文件
 virtualenv venv
+||
+python3 -m venv ./venv
 
 # mac 下使用source进入当前环境
 source venv/bin/activate
@@ -2695,3 +2697,248 @@ source venv/bin/activate
 deactivate
 
 ```
+
+
+## FastApi
+
+### 1. 安装
+
+```shell
+# 安装 fastapi
+pip install fastapi
+
+# 安装ASGI 服务器
+pip install uvicorn
+
+# main.py
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+# 启动服务，热更新
+uvicorn main:app --reload
+
+# 访问 http://127.0.0.1:8000/
+{
+    "Hello": "World"
+}
+
+```
+
+### 2. 路径参数
+
+```python
+# 定义一个路径参数
+@app.get("/item/{item_id}")
+async def get_item(item_id):
+    return {"message": "Hello World", "item_id": item_id}
+# curl http://127.0.0.1:8000/item/123   {"message":"Hello World","item_id":"123"}
+
+
+# 定义路径参数类型
+@app.get("/itemint/{item_id}")
+async def get_item(item_id: int):
+    return {"message": "Hello World", "item_id": item_id}
+# curl http://127.0.0.1:8000/itemint/999    {"message":"Hello World","item_id":999}
+
+# curl http://127.0.0.1:8000/itemint/qwe    {"detail":[{"loc":["path","item_id"],"msg":"value is not a valid integer","type":"type_error.integer"}]}
+
+```
+
+* Pydantic：所有的数据校验都是由Pydantic来完成的
+
+* 路径设置很重要，比如 /users/me 就要放在 /users/{name} 之前，不然后者就会把前者进行匹配，前者就接受不到请求了
+
+* 预设值：可以理解为使用枚举
+
+```python
+# 定义枚举
+class EnumModel(str, Enum):
+    alexnet = "alexnet"
+    resnet = "resnet"
+    lenet = "lenet"
+
+@app.get("/models/{model_name}")
+async def read_model(model_name: EnumModel):
+    if model_name == EnumModel.alexnet:
+        return {"model_name": model_name, "message": "this is alexnet"}
+    if model_name == "resnet":
+        return {"model_name": model_name, "message": "this is resnet"}
+    return {"model_name": model_name, "message": "this is author"}
+
+# curl http://127.0.0.1:8000/models/alexnet  {"model_name":"alexnet","message":"this is alexnet"}
+
+```
+
+* 包含路径的路径参数：可以理解为直接传递一个地址，并接收到
+
+```python
+@app.get("/files/{file_path:path}")
+async def read_file(file_path: str):
+    return {"file_path": file_path}
+# curl http://127.0.0.1:8000/files//home/johndoe/myfile.txt  {"file_path":"/home/johndoe/myfile.txt"}
+# curl http://127.0.0.1:8000/files/123/123/123  {"file_path":"123/123/123"}
+
+# 如果不设置 path 的话
+@app.get("/files/{file_path}")
+async def read_file(file_path: str):
+    return {"file_path": file_path}
+# curl http://127.0.0.1:8000/files//home/johndoe/myfile.txt {"detail":"Not Found"}
+# curl http://127.0.0.1:8000/files/homr   {"file_path":"homr"}
+
+```
+
+
+### 3. 查询参数
+
+* 声明不属于路径参数的其他函数参数时，它们将被自动解释为"查询字符串"参数，（说人话就是url问号后面的参数解析）
+
+```python
+# mock数据
+fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+# 可以理解为是分页把
+@app.get('/items/')
+async def read_item(skip: int = 0, limit: int = 10):
+    return fake_items_db[skip: skip + limit]
+
+# curl http://127.0.0.1:8000/items/\?skip\=0\&limit\=2  [{"item_name":"Foo"},{"item_name":"Bar"}]
+
+```
+
+* 可选参数
+
+```python
+from typing import Union
+# 如果你要设置一个必须的查询参数，那么就不用给该参数设置默认值就好，比如参数 s
+# q: Union[int, None] = None 这个的意思是 q 可以是 str 或者 None，默认为None
+@app.get("/items/{item_id}/")
+async def get_item(item_id: str, s:int, q: Union[str, None] = None):
+    result = {"item_id": item_id, "s": s}
+    print(q, 'q')
+    if q:
+        result.update({"q": q})
+    return result
+
+# curl http://127.0.0.1:8000/items/1/\?q\=abc\&s\=1    {"item_id":"1","s":1,"q":"abc"}
+
+```
+
+
+### 4. 请求体
+
+* request
+
+```python
+from pydantic import BaseModel
+# 请求体
+class Model(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    tax: Union[float, None] = None
+
+@app.post('/items/')
+async def get_items(item: Model):
+    item_dict = item.dict()
+    # 可以直接获取 model 的数据
+    print(item_dict, 'item_dict') # {'name': 'byron', 'description': None, 'price': 123.45, 'tax': None} item_dict
+    return item
+
+# curl -d '{"name": "byron", "price": 123.45}' -H "Content-Type: application/json" -X POST http://127.0.0.1:8000/items/     {"name":"byron","description":null,"price":123.45,"tax":null}
+
+```
+
+
+### 5. 查询参数和字符串校验
+
+```python
+from fastapi import FastAPI, Query
+# 使用Query 可以设置一些校验，max_length：最大长度，min_length：最小长度，regex：正则匹配
+@app.get('/itemsq/')
+async def get_itemsq(q: Union[str, None] = Query(default=None, max_length=50, min_length=3, regex="^fixedquery")):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+
+# curl http://127.0.0.1:8000/itemsq/\?q\=fixedquery     {"items":[{"item_id":"Foo"},{"item_id":"Bar"}],"q":"fixedquery"}
+
+# 声明为必需参数
+@app.get('/itemsq/')
+async def get_itemsq(q: str = Query(max_length=50, min_length=3, regex="^fixedquery")):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+
+
+# 查询参数列表 / 多个值
+@app.get('/itemsq/')
+async def get_itemsq(q: Union[List[str], None] = Query(default=None)):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+
+# curl http://127.0.0.1:8000/itemsq/\?q\=fixedquery\&q\=123\&q\=qwe     {"items":[{"item_id":"Foo"},{"item_id":"Bar"}],"q":["fixedquery","123","qwe"]}
+
+
+# 别名参数
+@app.get('/itemsq/')
+async def get_itemsq(item_query: Union[List[str], None] = Query(default=None, alias="item-query")):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if item_query:
+        results.update({"item_query": item_query})
+    return results
+# 注意这里url的 item-query 参数
+# curl http://127.0.0.1:8000/itemsq/\?item-query\=qwe   {"items":[{"item_id":"Foo"},{"item_id":"Bar"}],"item_query":["qwe"]}
+
+
+```
+
+* 还有一些针对文档的变量如 title：<span style="color: red">应该是标题</span>， description：详情内容，deprecated：是否弃用
+
+
+
+### 6. 路径参数的数值校验
+
+```python
+from fastapi import FastAPI, Path
+# 路径参数和数值校验
+@app.get("/items/{item_id}/{path_id}")
+async def read_items(
+    # ge=0：大于0，le=99：小于99
+    item_id: int = Path(title="The ID of the item to get", ge=0, le=99),
+    # gt=1.5：大于1.5， lt=9.9：小于9.9
+    path_id: float = Path(title='this is path_id', gt=1.5, lt=9.9),
+    q: Union[str, None] = Query(default=None, alias="item-query"),
+):
+    results = {"item_id": item_id, "path_id": path_id}
+    if q:
+        results.update({"q": q})
+    return results
+
+# curl http://127.0.0.1:8000/items/99/9.8   {"item_id":99,"path_id":9.8}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 爬虫
+* 请求数据，获取数据，解析数据，展示数据
