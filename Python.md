@@ -2929,10 +2929,90 @@ async def read_items(
 ```
 
 
+### 7. 请求体-多个参数
+
+```python
+from fastapi import FastAPI, Body
+# Body：目的是为了让request中添加单一值，如果不实用 body 那么fastapi 会把你的单一参数默认为一个查询参数，也就是?后面拼接的参数
+@app.post("/items/{item_id}")
+async def update_item(item_id: int, item: Item, user: User, importance: int = Body(gt=0)):
+    results = {"item_id": item_id, "item": item, "user": user, "importance": importance}
+    return results
+
+# curl -d '{"item":{"name":"Foo","description":"The pretender","price":42,"tax":3.2},"user":{"username":"dave","full_name":"Dave Grohl"}, "importance": 5}' -H "Content-Type: Application/json" -X POST http://127.0.0.1:8000/items/1\?importance\=999  理论上说post一般？后面很少拼接参数，这里指做实验用，可以看到response的importance返回的说请求体的importance，而不是查询参数的importance
+
+# {"item_id":1,"item":{"name":"Foo","description":"The pretender","price":42.0,"tax":3.2},"user":{"username":"dave","full_name":"Dave Grohl"},"importance":5}
+
+# 再来看下这个的意思Body(embed=True)，相当于在request需要指定key，看以下两个例子
+@app.post("/items/{item_id}")
+async def update_item(item_id: int, item: Item):
+    results = {"item_id": item_id, "item": item }
+    return results
+# curl -d '{"name":"Foo","description":"The pretender","price":42,"tax":3.2}' -H "Content-Type: Application/json" -X POST http://127.0.0.1:8000/items/1
+# {"item_id":1,"item":{"name":"Foo","description":"The pretender","price":42.0,"tax":3.2}}
+
+@app.post("/items/{item_id}")
+async def update_item(item_id: int, item: Item = Body(embed=True)):
+    results = {"item_id": item_id, "item": item }
+    return results
+# curl -d '{"item":{"name":"Foo","description":"The pretender","price":42,"tax":3.2}}' -H "Content-Type: Application/json" -X POST http://127.0.0.1:8000/items/1
+# {"item_id":1,"item":{"name":"Foo","description":"The pretender","price":42.0,"tax":3.2}}
+
+```
 
 
+### 8. 请求体-字段
+
+```python
+from pydantic import BaseModel, Field
+class Item(BaseModel):
+    name: str
+    # Field 相当于在model层做了校验，就不在函数层使用Query做校验了
+    description: Union[str, None] = Field(
+        default='description', title="The description of the item", max_length=300
+    )
+    price: float = Field(gt=0, description="The price must be greater than zero")
+    tax: Union[float, None] = None
 
 
+@app.post("/items/{item_id}")
+async def update_item(item_id: int, item: Item = Body(embed=True)):
+    results = {"item_id": item_id, "item": item}
+    return results
+
+```
+
+
+### 9. 请求体-嵌套模型
+
+```python
+# List 类型
+from typing import List, Union, Set
+from pydantic import BaseModel, HttpUrl
+
+class Image(BaseModel):
+    # url 将被检查是否为有效的 URL
+    url: HttpUrl
+    name: str
+
+class Item(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    tax: Union[float, None] = None
+    # 设置 tags 为每个 value 为 str 的 list
+    tags: List[str] = []
+    # sags 为每个 value 为 str 且不重复
+    sags: Set[str] = set()
+    # image 为 None 或者 Image 类型，默认 None
+    image: Union[Image, None] = None
+    # images 为 None 或者一个由 Image 组成的 list
+    images: Union[List[Image], None] = None
+
+```
+
+
+### 10. Cookie 参数
 
 
 
