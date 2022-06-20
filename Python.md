@@ -3025,6 +3025,214 @@ class Item(BaseModel):
 
 ### 10. Cookie 参数
 
+```python
+from fastapi import FastAPI, Cookie
+
+@app.get('/items')
+async def get_item(userid: Union[str, None] = Cookie(default=None)):
+    print(userid)
+    return {"cookie": userid}
+
+# 1. 先对本地路径页面下种一个 userid 的cookie
+# 2. 使用网页打开 http://127.0.0.1:8000/items，就可以拿到对应的 cookie 了
+
+```
+
+
+### 11. Header 参数
+
+```python
+# Header 参数
+@app.get("/items/")
+async def read_items(
+        # convert_underscores=False 目的是禁用下划线到连字符的自动转换
+        user_agent: Union[str, None] = Header(
+            default=None,
+            # convert_underscores=False
+        ),
+        Upgrade_Insecure_Requests: Union[int, None] = Header(default= None),
+        Cookie: Union[str, None] = Header(default=None)
+):
+    return {
+        "User-Agent": user_agent,
+        'Upgrade-Insecure-Requests': Upgrade_Insecure_Requests,
+        'Cookie': Cookie
+    }
+
+# 用浏览器打开 http://127.0.0.1:8000/items/
+# {
+#     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36",
+#     "Upgrade-Insecure-Requests": 1,
+#     "Cookie": "userid=123"
+# }
+
+```
+
+
+### 12. 响应模型
+
+```python
+# 响应模型，你可以在任意请求中使用 response_model 参数来声明用于响应的模型
+class UserIn(BaseModel):
+    username: str
+    password: str
+    email: EmailStr
+    fullName: Union[str, None] = None
+
+# response_model 请求需要使用的 model 模型
+# response_model_exclude_unset=True 如果不传递默认参数，将不展示（仅返回显式设定的值）
+@app.post('/items/', response_model=UserIn, response_model_exclude_unset=True)
+async def get_item(user: UserIn):
+    return user
+
+# curl -d '{"username": "123", "password": "pass", "email": "abc@qq.com", "fullName": "byron"}' -H "Content-Type: Application/json" -X POST http://127.0.0.1:8000/items/
+# {"username":"123","password":"pass","email":"abc@qq.com","fullName":"byron"}
+
+```
+
+
+### 13. 额外的模型
+
+```python
+# user model 基类
+class UserBase(BaseModel):
+    username: str
+    email: EmailStr
+    full_name: Union[str, None] = None
+
+# request model
+class UserIn(UserBase):
+    password: str
+
+# response model
+class UserOut(UserBase):
+    pass
+
+# 数据存储 model
+class UserInDB(UserBase):
+    hashed_password: str
+
+
+def fake_password_hasher(raw_password: str):
+    return "supersecret" + raw_password
+
+
+def fake_save_user(user_in: UserIn):
+    hashed_password = fake_password_hasher(user_in.password)
+    print(user_in, 'user_in') # 有 password 参数
+    # 这里相当于把 user_in 结构后按照 UserInDB 模型添加 hashed_password 参数，
+    user_in_db = UserInDB(**user_in.dict(), hashed_password=hashed_password)
+    print(user_in_db, 'user_in_db') # 没有 password 参数，有 hashed_password 参数
+    print("User saved! ..not really")
+    return user_in_db
+
+
+@app.post("/user/", response_model=UserOut)
+async def create_user(user_in: UserIn):
+    user_saved = fake_save_user(user_in)
+    print(user_saved, 'router') # 这里其实是有 hashed_password 内容的，但是导出 UserOut model 是没有 hashed_password，所有 response 没有 hashed_password 值
+    return user_saved
+
+# curl -d '{"username": "byron", "password": "pass", "email": "123@qq.com", "full_name": "real-byron"}' -H "Content-Type: Application/json" -X POST http://127.0.0.1:8000/user/
+# {"username":"byron","email":"123@qq.com","full_name":"real-byron"}
+
+```
+
+
+### 14. 响应状态码
+
+```python
+from fastapi import FastAPI, status
+
+@app.post("/items/", status_code=status.HTTP_201_CREATED)
+async def create_item(name: str):
+    return {"name": name}
+
+# curl -X POST http://127.0.0.1:8000/items/\?name\=byrons   {"name":"byrons"}
+
+```
+
+
+### 15. 表单数据
+针对 form 表单请求数据
+
+```python
+# 自己试试吧
+from fastapi import FastAPI, Form
+@app.post("/login/")
+async def login(username: str = Form(), password: str = Form()):
+    return {"username": username}
+
+# curl -d 'username=byron' -d 'password=qweqwe' http://127.0.0.1:8000/login/    {"username":"byron"}
+
+```
+
+
+### 16. 请求文件
+
+```python
+from fastapi import FastAPI, File, UploadFile
+
+@app.get("/")
+async def root():
+    # return {"message": "Hello World"}
+    content = """
+    <body>
+    <form action="/files/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit" title="提交-files">
+    </form>
+    <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit" title="提交-uploadfiles">
+    </form>
+    </body>
+        """
+    return HTMLResponse(content=content)
+
+# 请求文件
+@app.post("/files/")
+async def create_files(files: List[bytes] = File()):
+    return {"file_sizes": [len(file) for file in files]}
+
+
+@app.post("/uploadfiles/")
+async def create_upload_files(files: List[UploadFile]):
+    return {"filenames": [file.filename for file in files], "content_type": [file.content_type for file in files]}
+
+```
+
+
+### 17. 错误处理
+
+```python
+from fastapi import FastAPI, HTTPException
+
+items = {"foo": "The Foo Wrestlers"}
+# 错误处理
+@app.get('/items/{item_id}')
+async def get_Item(item_id: Union[str, None] = None):
+    if item_id not in items:
+        raise HTTPException(
+            status_code=404,
+            detail='Item not found',
+            headers={"X-Error": "There goes my error"},
+        )
+    return {"item": items[item_id]}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
