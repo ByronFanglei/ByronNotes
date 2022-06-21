@@ -845,7 +845,7 @@ class Student(object):
         self.__name = name
         self.__score = score
     
-     def print_score(self):
+    def print_score(self):
         print('我叫 %s 我今年 %d 岁' % (self.__name, 
         self.__score))
     # 外部获取内部变量
@@ -1012,7 +1012,7 @@ g.score = 123
 
 ```python
 class Student(object):
-    # 添加 @property 就是将score设置成一个get方法，类似与装饰器
+# 添加 @property 就是将score设置成一个get方法，类似与装饰器
     @property
     def score(self):
         return self._score
@@ -3223,10 +3223,112 @@ async def get_Item(item_id: Union[str, None] = None):
 ```
 
 
+### 18. 依赖注入
+
+```python
+from fastapi import FastAPI, Depends
+# 依赖注入，如果某些地方要共享一些逻辑，就需要进行依赖注入
+async def common_parameters(
+    q: Union[str, None] = None, skip: int = 0, limit: int = 100
+):
+    if skip == 100:
+        return {"q": q, "skip": 999, "limit": limit}
+    return {"q": q, "skip": skip, "limit": limit}
+
+# /items/ 可以使用 common_parameters 逻辑
+@app.get("/items/")
+async def read_items(commons: dict = Depends(common_parameters)):
+    return commons
+
+# curl http://127.0.0.1:8000/items/\?q\=qwe\&skip\=100\&limit\=999
+# {"q":"qwe","skip":999,"limit":999}
+
+# /users/ 也可以使用 common_parameters 逻辑
+@app.get("/users/")
+async def read_users(commons: dict = Depends(common_parameters)):
+    return commons
 
 
 
+# 当然依赖也可以直接用 class
+class CommonQueryParams:
+    def __init__(self, q: Union[str, None] = None, skip: int = 0, limit: int = 100):
+        self.q = q
+        self.skip = skip
+        self.limit = limit
 
+@app.get('/class/')
+def get_item(commons: CommonQueryParams = Depends()):
+    return commons
+```
+
+* 子依赖项
+
+```python
+# 子依赖项（多层嵌套依赖）
+def query_extractor(q: Union[str, None] = None):
+    return q
+
+def query_or_cookie_extractor(
+    # 这里依赖 query_extractor 方法
+    q: str = Depends(query_extractor),
+    last_query: Union[str, None] = Cookie(default=None)
+):
+    if not q:
+        return last_query
+    return q
+
+@app.get('/items/')
+# use_cache=False 目的是不使用缓存，因为在多次使用依赖过程中，优先会使用缓存，如果将 use_cache=False 后就不使用缓存了
+def get_item(query_or_default: str = Depends(query_or_cookie_extractor, use_cache=False)):
+    return {"q_or_cookie": query_or_default}
+
+# 不添加cookie
+# curl http://127.0.0.1:8000/items/\?q\=qwe {"q_or_cookie":"qwe"}
+# 设置cookie 不添加 q 参数
+# curl -b 'last_query=asd' http://127.0.0.1:8000/items/  {"q_or_cookie":"asd"}
+
+```
+
+* 路径操作装饰器依赖项
+
+```python
+
+# 路径操作装饰器依赖项：比如我们要拦截 header、cookie 这样的属性，我们就不用在路径操作函数上使用 Depends，可以直接在路径操作装饰器上使用
+async def verify_token(x_token: str = Header()):
+    if x_token != "fake-super-secret-token":
+        raise HTTPException(status_code=404, detail='X-Token header invalid')
+
+async def verify_key(x_key: str = Header()):
+    if x_key != 'fake-super-secret-key':
+        raise HTTPException(status_code=404, detail='X-Key header invalid')
+    return x_key
+
+@app.get('/items/', dependencies=[Depends(verify_token), Depends(verify_key)])
+async def get_item():
+    return [{"item": "Foo"}, {"item": "Bar"}]
+
+# curl -H 'X-Token:fake-super-secret-token' -H 'X-Key:fake-super-secret-key' http://127.0.0.1:8000/items/
+# [{"item":"Foo"},{"item":"Bar"}]
+
+```
+
+* 全局依赖项
+
+```python
+from fastapi import FastAPI
+# 在注册 app 时候就进行依赖，之后所有的接口都会注入该依赖
+app = FastAPI(dependencies=[Depends(verify_token), Depends(verify_key)])
+
+```
+
+
+### 19. 安全性
+
+```python
+
+
+```
 
 
 
