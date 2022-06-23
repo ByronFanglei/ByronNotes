@@ -1260,7 +1260,7 @@ try:
     print('try...')
     r = 10 / 0
     print('result:', r)
-# 如果先补货 BaseException 那么下面的错误就捕获不到了，因为BaseException 是整个错误的基类
+# 如果先捕获 BaseException 那么下面的错误就捕获不到了，因为BaseException 是整个错误的基类
 # except BaseException as e:
     # print('BaseException:', e)    
 # 这里可以多次使用except进行捕获错误
@@ -3326,7 +3326,189 @@ app = FastAPI(dependencies=[Depends(verify_token), Depends(verify_key)])
 ### 19. 安全性
 
 ```python
+# jwt 整体流程
 
+# Token 参数
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Mock 数据
+fake_users_db = {
+    "johndoe": {
+        "username": "johndoe",
+        "full_name": "John Doe",
+        "email": "johndoe@example.com",
+        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+        "disabled": False,
+    }
+}
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Union[str, None] = None
+
+
+class User(BaseModel):
+    username: str
+    email: Union[str, None] = None
+    full_name: Union[str, None] = None
+    disabled: Union[bool, None] = None
+
+
+class UserInDB(User):
+    hashed_password: str
+
+
+class UserLogin(User):
+    password: str
+
+
+class UserLoginOut(BaseModel):
+    err: Union[str, None]
+    is_login: bool
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+# 对密码进行校验
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+# 对密码进行 hash
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+# 在 db 中查找用户
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        # 转换为 UserInDB 返回
+        return UserInDB(**user_dict)
+
+
+# 获取用户信息
+def authenticate_user(fake_db, username: str, password: str):
+    # 获取 db 中的用户
+    user = get_user(fake_db, username)
+    if not user:
+        return False
+    # 校验密码
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+# 创建 token
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    # 这里如果有 timedelta 那么设置对应过期时间，没有默认 15 分钟
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    # 生成 jwt
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+# 校验 token
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    # 创建 HTTP 错误
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        # 解析 token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # 获取用户名
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        # 获取 TokenData 模型的用户名称
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    # 在 db 中找到该用户
+    user = get_user(fake_users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_active_user(current_user: User = Depends(get_current_user)):
+    # 判断用户 db 数据的 disabled
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+# 用户注册
+@app.post("/register", response_model=UserLoginOut)
+async def login(userinfo: UserLogin):
+    try:
+        # 将用户密码进行 hash
+        hashed_password = get_password_hash(userinfo.password)
+        # 更新本地数据，正常来讲需要存入 db
+        fake_users_db[userinfo.username] = {
+            "username": userinfo.username,
+            "full_name": userinfo.full_name,
+            "email": userinfo.email,
+            "hashed_password": hashed_password,
+            "disabled": False,
+        }
+    except BaseException as e:
+        return {"is_login": False, "err": e}
+    return {"is_login": True}
+
+
+# 用户登陆
+@app.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    # 获取对应的时间，这里是获取 30 分钟
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    # 通过用户信息创建 token
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+# 查看个人信息
+@app.get("/users/me/", response_model=User)
+async def read_users_me(current_user: User = Depends(get_current_active_user)):
+    return current_user
+
+'''
+第一步：进行注册
+curl -d '{"username": "byron", "password": "qweqwe"}' -H "Content-Type: Application/json" http://127.0.0.1:8000/register
+
+第二步：进行登陆，登陆成功会拿到 token
+curl -d 'username=byron&password=qweqwe' -H 'Content-Type: application/x-www-form-urlencoded' -X POST http://127.0.0.1:8000/token
+
+第三步：通过 token 获取用户信息
+curl http://127.0.0.1:8000/users/me/ -H "Authorization: Bearer token"
+'''
 
 ```
 

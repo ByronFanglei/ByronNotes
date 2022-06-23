@@ -544,7 +544,7 @@ Number.MAX_VALUE
 Number.MIN_VALUE
 // 5e-324
 
-// 可以使用isFinite来判断最大与最小值之间
+// 可以使用isFinite来判断是否在安全整数区间
 isFinite(Number.MAX_VALUE)
 // true
 isFinite(Number.MAX_VALUE + Number.MAX_VALUE)
