@@ -3513,6 +3513,44 @@ curl http://127.0.0.1:8000/users/me/ -H "Authorization: Bearer token"
 ```
 
 
+### 20. 中间件
+
+```python
+@app.middleware('http')
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    # 对response添加自定义请求头，内容为请求响应的时间
+    response.headers["X-Process-Time-Diy"] = str(process_time)
+    return response
+
+# 通过 fastapi 文档执行任意一个请求，F12 查看接口会在 response.headers 中看到自定义的请求头以及内容
+
+```
+
+
+### 21. CORS（跨域资源共享）
+
+https://fastapi.tiangolo.com/zh/tutorial/cors/
+
+```python
+app.add_middleware(
+    CORSMiddleware,
+    # 允许跨域请求的源列表
+    allow_origins=["*"],
+    # 指示跨域请求支持 cookies
+    allow_credentials=True,
+    # 允许跨域请求的 HTTP 方法列表
+    allow_methods=["*"],
+    # 可以被浏览器访问的响应头
+    allow_headers=["*"]
+)
+
+```
+
+
+### 22. 
 
 
 

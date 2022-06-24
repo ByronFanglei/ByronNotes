@@ -1256,16 +1256,91 @@ Number.isNaN(NaN) // true
 
 ### Array 构造函数只有一个参数值时的表现
 
+Array 只有一个参数的时候会被当作数据的预设长度来使用，不会重当数组中的元素
+
+```javascript
+Array(10) // [empty × 10]
+Array(1,2) // [1, 2]
+
+```
+
+
+### 常见的值转换字符串的规则
+
+```javascript
+String(null) // "null"
+String(undefined) // "undefined"
+String(true) // "true"
+String(false) // "false"
+String(Symbol()) // "Symbol()"
+String(1) // "1"
+String(1.1) // "1.1"
+String(NaN) // "NaN"
+
+```
+
+
+### 常见的值转换数字的规则
+
+```javascript
+Number(null) // 0
+Number(undefined) // NaN
+Number(false) // 0
+Number(true) // 1
+Number("") // 0
+Number("123") // 123
+Number("123a") // NaN
+Number(Symbol()) // TypeError: Cannot convert a Symbol value to a number
+Number([]) // 0
+Number([1]) // 1
+Number([1,2]) // NaN
+Number(["a"]) // NaN
+Number({}) // NaN
+
+```
+
+
+### 常见的值转换布尔值的规则
+
+```javascript
+Boolean(undefined) // false
+Boolean(null) // false
+Boolean(false) // false
+Boolean(0) // false
+Boolean(-0) // false
+Boolean(+0) // false
+Boolean(NaN) // false
+Boolean("") // false
+Boolean({}) // true
+Boolean([]) // true
+Boolean("false") // true
+Boolean(1) // true
+
+```
+
+
+### {} 和 [] 的 valueOf 和 toString 的结果是什么
+
+* {} 的 valueOf 结果为 {} ，toString 的结果为 "[object Object]"
+
+
+* [] 的 valueOf 结果为 [] ，toString 的结果为 ""
 
 
 
+### 什么是假值对象
+
+浏览器在某些特定的情况下，在常规的 javascript 语法基础上自己创建了一些外来值，这些就是 假值对象，假值对象看起来和普通对象并无二致（都有属性，等等），但将它们强制类型转换为布尔值时结果为 false 最常见的例子是 document.all，它是一个类数组对象，包含了页面上的所有元素，由 DOM（而不是 JavaScript 引擎）提供给 JavaScript 程序使用
+
+```javascript
+const aa = document.all
+Boolean(aa) // false
+console.log(aa) //  HTMLAllCollection(301) [html, head, meta, meta, title, meta, meta, meta...
+
+```
 
 
-
-
-
-
-
+### ~ 操作符的作用
 
 
 
