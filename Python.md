@@ -1699,6 +1699,125 @@ t2.join()
 print(balance)
 print(time.time())
 
+
+#-----------------------------------------------------
+
+# 模拟存钱
+from concurrent.futures import ThreadPoolExecutor
+from threading import RLock
+
+class Account(object):
+    def __init__(self):
+        self.balance = 0.0
+        self.lock = RLock()
+
+    def deposit(self, money):
+        # 加锁
+        with self.lock:
+            new_balance = self.balance + money
+            time.sleep(0.01)
+            self.balance = new_balance
+        
+        # 不加锁 可以执行看看效果
+        # new_balance = self.balance + money
+        # time.sleep(0.01)
+        # self.balance = new_balance
+
+def main():
+    """主函数"""
+    account = Account()
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        for _ in range(100):
+            pool.submit(account.deposit, 1)
+    print(account.balance)
+
+
+if __name__ == '__main__':
+    main()
+```
+
+
+* 多线程单线程对比，这里模拟下载多个文件
+
+```python
+
+# 单线程下载
+def download(*, filename):
+    start = time.time()
+    print(f'开始下载 {filename}.')
+    time.sleep(random.randint(3, 6))
+    print(f'{filename} 下载完成.')
+    end = time.time()
+    print(f'下载耗时: {end - start:.3f}秒.')
+
+def main():
+    start = time.time()
+    download(filename='Python从入门到住院.pdf')
+    download(filename='MySQL从删库到跑路.avi')
+    download(filename='Linux从精通到放弃.mp4')
+    end = time.time()
+    print(f'总耗时: {end - start:.3f}秒.')
+
+if __name__ == '__main__':
+    main()
+
+
+# 多线程下载
+from threading import Thread
+
+class DownloadThread(Thread): # 这里跟 download 本质是一样的，只是换一种写法
+    def __init__(self, filename):
+        self.filename = filename
+        super().__init__()
+
+    def run(self):
+        start = time.time()
+        print(f'开始下载 {self.filename}.')
+        time.sleep(random.randint(3, 6))
+        print(f'{self.filename} 下载完成.')
+        end = time.time()
+        print(f'下载耗时: {end - start:.3f}秒.')
+
+def main():
+    threads = {
+        DownloadThread('Python从入门到住院.pdf'),
+        DownloadThread('MySQL从删库到跑路.avi'),
+        DownloadThread('Linux从精通到放弃.mp4'),
+    }
+    startTime = time.time()
+    # 启动线程
+    for thread in threads:
+        thread.start()
+    # 等待线程结束
+    for thread in threads:
+        thread.join()
+    endTime = time.time()
+    print(f'总耗时：{endTime-startTime:.3f}秒')
+
+
+
+# 使用线程池处理
+from concurrent.futures import ThreadPoolExecutor
+
+def download(*, filename):
+    start = time.time()
+    print(f'开始下载 {filename}.')
+    time.sleep(random.randint(3, 6))
+    print(f'{filename} 下载完成.')
+    end = time.time()
+    print(f'下载耗时: {end - start:.3f}秒.')
+
+
+def main():
+    print("使用线程池")
+    with ThreadPoolExecutor(max_workers=2) as pool: # 最大下载为 2 
+        filenames = ['Python从入门到住院.pdf', 'MySQL从删库到跑路.avi', 'Linux从精通到放弃.mp4']
+        start = time.time()
+        for filename in filenames:
+            pool.submit(download, filename=filename)
+    end = time.time()
+    print(f'总耗时: {end - start:.3f}秒.')
+
 ```
 
 3. ThreadLocal：在多线程中优雅的创建全局数据
