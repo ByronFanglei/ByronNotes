@@ -2807,7 +2807,7 @@ loop.run_forever()
 ```
 
 
-## virtualenv
+## <span style="color: red">virtualenv</span>
 * 目的是为了分离环境，让不同项目都在自己虚拟环境内安装包等
 
 ```shell
