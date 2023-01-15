@@ -304,8 +304,9 @@ git restore --staged .
 git restore -s HEAD~1 READEME.md
 # 改命令指定明确的 commit id ，回退到指定的快照中
 git restore -s 91410eb9  READEME.md
-# 该命令表示撤销 commit 至少一次 commit 的版本
-git reset --soft HEAD^
+# 该命令表示撤销 commit 至少一次 commit 的版本，可以将远程内容保存在本地，add 状态
+git reset --soft HEAD^ 
+git reset --soft HEAD~3 # 表示撤销三次 commit
 ```
 
 ### git push后怎样撤回
