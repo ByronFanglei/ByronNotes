@@ -171,7 +171,7 @@ var result = [...arr3].sort(function(a,b){
     })
 ```
 
-* forEach：需要一个函数作为参数，遇见return不会终止迭代，不会返回新数组
+* forEach：需要一个函数作为参数，遇见return不会终止迭代，不会返回新数组， 一般用于同步遍历
 ```javascript
 arr.forEach(function(value,index,obj){
     console.log(value+'=='+index)
@@ -266,7 +266,7 @@ console.log(arr) // ['tom','65','男',['jane','john','Mary']]
 ```
 
 * findIndex()：与find使用方法一致，返回对应值的下标值
-* for of：使用的Symbol.iterator接口，在数组原型中
+* for of：使用的Symbol.iterator接口，在数组原型中， 一般用于异步遍历
 
 ```javascript
     var arr = [1,2,3,3,4,5,6];
@@ -2239,7 +2239,7 @@ arr.every((item) => {
 })
 
 console.log('-------for in循环遍历---------')
-// for in 一般使用在object中,可以使用break,continue
+// for in 一般使用在object中,可以使用break,continue，一般用于同步遍历
 // 瑕疵：因为for in起初是为了对象设计的，然而数组也属于对象，然后当数组添加对象后也会进行输出
 // arr.a = 8
 for (let key in arr) {
